@@ -1,4 +1,9 @@
 import express from "express";
+import { connectToDatabase } from "./config/db.js";
+import dotenv from "dotenv";
+
+dotenv.config(); // variaveis de ambiente
+connectToDatabase(); // banco de dados
 
 const app = express();
 
@@ -8,6 +13,6 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.listen(3000, () => {
-  console.log("servidor rodando na porta 3000");
+app.listen(process.env.PORT, () => {
+  console.log(`Servidor rodando na porta ${process.env.PORT}`);
 });
