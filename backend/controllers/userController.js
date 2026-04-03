@@ -18,8 +18,8 @@ export class UserController {
       if (!password) {
         return res.status(400).json({ message: "Senha é obrigatória" });
       }
-      const userId = await this.userService.createUser({ name, password });
-      res.status(201).json({ message: "usuario criado", id: userId });
+      await this.userService.createUser({ name, password });
+      res.status(201).json({ message: "usuario criado" });
     } catch (error) {
       res
         .status(500)

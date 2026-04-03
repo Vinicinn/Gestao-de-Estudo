@@ -28,7 +28,7 @@ export class UserService {
     }
 
     const user = { name, password };
-    return await this.userRepository.createUser(user);
+    await this.userRepository.createUser(user);
   }
 
   async getUserById(id) {
@@ -45,14 +45,13 @@ export class UserService {
   }
 
   async updateUser(id, update) {
+    update.name = update.name.trim();
+    update.password = update.password.trim();
+
     // validacao de negocio
     if (!ObjectId.isValid(id)) {
       throw new Error("ID inválido");
     }
-
-    update.name = update.name.trim();
-    update.password = update.password.trim();
-
     if (!update.name) {
       throw new Error("Nome invalido");
     }
@@ -66,6 +65,11 @@ export class UserService {
       throw new Error("Senha deve ter pelo menos 4 caracteres");
     }
 
+    const user = await this.userRepository.getUserById(id);
+    if (user === null) {
+      throw new Error("Usuario não encontrado");
+    }
+
     await this.userRepository.updateUser(id, update);
   }
 
@@ -74,6 +78,12 @@ export class UserService {
     if (!ObjectId.isValid(id)) {
       throw new Error("ID inválido");
     }
+
+    const user = await this.userRepository.getUserById(id);
+    if (user === null) {
+      throw new Error("Usuario não encontrado");
+    }
+
     await this.userRepository.deleteUser(id);
   }
 }
