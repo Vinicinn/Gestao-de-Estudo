@@ -1,3 +1,4 @@
+// Repository para operações com revisões
 export class ReviewRepository {
   constructor(database) {
     this.collection = database.collection("reviews");

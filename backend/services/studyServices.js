@@ -1,3 +1,4 @@
+// Service para lógica de negócio de estudos
 export class StudyService {
   constructor(studyRepository, reviewService) {
     this.studyRepository = studyRepository;
@@ -32,14 +33,15 @@ export class StudyService {
 
     const createdStudy = await this.studyRepository.createStudy(study);
 
-    // Gerar revisões automáticas
+    // Gera revisões automáticas baseadas na curva de Ebbinghaus
     await this.generateReviews(createdStudy.insertedId, subject, topic, initialDate);
 
     return createdStudy;
   }
 
+  // Gera revisões nos intervalos: 1, 3, 7, 15, 30 dias
   async generateReviews(studyId, subject, topic, initialDate) {
-    const intervals = [1, 3, 7, 15, 30]; // dias
+    const intervals = [1, 3, 7, 15, 30]; // dias da curva de esquecimento
     const initial = new Date(initialDate);
 
     for (const interval of intervals) {
@@ -58,7 +60,7 @@ export class StudyService {
   }
 
   async getTotalHours() {
-    // Este método pode não ser mais relevante, mas mantido para compatibilidade
+    // Método mantido para compatibilidade
     const studies = await this.studyRepository.findAll();
     return studies.reduce((total, study) => total + (Number(study.hours) || 0), 0);
   }

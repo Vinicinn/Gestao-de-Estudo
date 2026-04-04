@@ -1,3 +1,5 @@
+
+// Controller para endpoints de revisões
 export class ReviewController {
   constructor(reviewService) {
     this.reviewService = reviewService;
@@ -6,6 +8,7 @@ export class ReviewController {
   async getAllReviews(req, res) {
     res.json(await this.reviewService.getAllReviews());
   }
+
 
   async getReviewsByDate(req, res) {
     // validacao de entrada

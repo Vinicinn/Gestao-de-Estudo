@@ -1,3 +1,4 @@
+// Controller para endpoints de estudos
 export class StudyController {
   constructor(studyService, reviewService, scheduleService) {
     this.studyService = studyService;

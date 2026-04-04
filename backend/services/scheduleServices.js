@@ -1,3 +1,4 @@
+// Service para lógica de negócio de agendamentos manuais
 export class ScheduleService {
   constructor(scheduleRepository) {
     this.scheduleRepository = scheduleRepository;

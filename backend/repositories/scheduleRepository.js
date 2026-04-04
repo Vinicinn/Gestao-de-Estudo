@@ -1,3 +1,4 @@
+// Repository para operações com agendamentos manuais
 export class ScheduleRepository {
   constructor(database) {
     this.collection = database.collection("schedules");

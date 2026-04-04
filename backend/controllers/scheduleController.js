@@ -1,3 +1,4 @@
+// Controller para endpoints de agendamentos manuais
 export class ScheduleController {
   constructor(scheduleService) {
     this.scheduleService = scheduleService;
