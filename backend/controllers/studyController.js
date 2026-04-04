@@ -1,6 +1,8 @@
 export class StudyController {
-  constructor(studyService) {
+  constructor(studyService, reviewService, scheduleService) {
     this.studyService = studyService;
+    this.reviewService = reviewService;
+    this.scheduleService = scheduleService;
   }
 
   async getAllStudies(req, res) {
@@ -10,7 +12,7 @@ export class StudyController {
   async createStudy(req, res) {
     // validacao de entrada
     try {
-      const { subject, topic, date, hours } = req.body;
+      const { subject, topic, initialDate } = req.body;
 
       if (!subject) {
         return res.status(400).json({ message: "Matéria é obrigatória" });
@@ -18,43 +20,40 @@ export class StudyController {
       if (!topic) {
         return res.status(400).json({ message: "Assunto é obrigatório" });
       }
-      if (!date) {
-        return res.status(400).json({ message: "Data do estudo é obrigatória" });
-      }
-      if (hours === undefined) {
-        return res.status(400).json({ message: "Quantidade de horas é obrigatória" });
-      }
-
-      const parsedHours = Number(hours);
-      if (Number.isNaN(parsedHours)) {
-        return res.status(400).json({
-          message: "Quantidade de horas inválida",
-        });
+      if (!initialDate) {
+        return res.status(400).json({ message: "Data inicial é obrigatória" });
       }
 
       await this.studyService.createStudy({
         subject,
         topic,
-        date,
-        hours: parsedHours,
+        initialDate,
       });
 
-      res.status(201).json({ message: "Registro de estudo criado" });
+      res.status(201).json({ message: "Estudo cadastrado e revisões geradas" });
     } catch (error) {
       res.status(500).json({
-        message: "Error ao criar registro de estudo",
+        message: "Error ao criar estudo",
         error: error.message,
       });
     }
   }
 
-  async getTotalHours(req, res) {
+  async getTodayItems(req, res) {
     // validacao de entrada
     try {
-      res.json({ totalHours: await this.studyService.getTotalHours() });
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const reviews = await this.reviewService.getReviewsByDate(today);
+      const schedules = await this.scheduleService.getSchedulesByDate(today);
+
+      res.json({
+        date: today,
+        reviews,
+        schedules,
+      });
     } catch (error) {
       res.status(500).json({
-        message: "Error ao calcular total de horas estudadas",
+        message: "Error ao buscar itens do dia",
         error: error.message,
       });
     }

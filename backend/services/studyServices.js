@@ -1,17 +1,18 @@
 export class StudyService {
-  constructor(studyRepository) {
+  constructor(studyRepository, reviewService) {
     this.studyRepository = studyRepository;
+    this.reviewService = reviewService;
   }
 
   async getAllStudies() {
     return await this.studyRepository.findAll();
   }
 
-  async createStudy({ subject, topic, date, hours }) {
+  async createStudy({ subject, topic, initialDate }) {
     // validacao de negocio
     subject = subject?.trim();
     topic = topic?.trim();
-    date = date?.trim();
+    initialDate = initialDate?.trim();
 
     if (!subject) {
       throw new Error("Matéria inválida");
@@ -19,24 +20,45 @@ export class StudyService {
     if (!topic) {
       throw new Error("Assunto inválido");
     }
-    if (!date || Number.isNaN(Date.parse(date))) {
-      throw new Error("Data do estudo inválida");
-    }
-    if (typeof hours !== "number" || hours <= 0) {
-      throw new Error("Quantidade de horas inválida");
+    if (!initialDate || Number.isNaN(Date.parse(initialDate))) {
+      throw new Error("Data inicial inválida");
     }
 
     const study = {
       subject,
       topic,
-      date,
-      hours,
+      initialDate,
     };
 
-    await this.studyRepository.createStudy(study);
+    const createdStudy = await this.studyRepository.createStudy(study);
+
+    // Gerar revisões automáticas
+    await this.generateReviews(createdStudy.insertedId, subject, topic, initialDate);
+
+    return createdStudy;
+  }
+
+  async generateReviews(studyId, subject, topic, initialDate) {
+    const intervals = [1, 3, 7, 15, 30]; // dias
+    const initial = new Date(initialDate);
+
+    for (const interval of intervals) {
+      const reviewDate = new Date(initial);
+      reviewDate.setDate(reviewDate.getDate() + interval);
+      const reviewDateStr = reviewDate.toISOString().split('T')[0]; // formato YYYY-MM-DD
+
+      await this.reviewService.createReview({
+        studyId: studyId.toString(),
+        subject,
+        topic,
+        reviewDate: reviewDateStr,
+        interval,
+      });
+    }
   }
 
   async getTotalHours() {
+    // Este método pode não ser mais relevante, mas mantido para compatibilidade
     const studies = await this.studyRepository.findAll();
     return studies.reduce((total, study) => total + (Number(study.hours) || 0), 0);
   }

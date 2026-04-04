@@ -6,6 +6,7 @@ export function studyRoutes(studyController) {
   router.get("/", (req, res) => studyController.getAllStudies(req, res));
   router.post("/", (req, res) => studyController.createStudy(req, res));
   router.get("/total-hours", (req, res) => studyController.getTotalHours(req, res));
+  router.get("/today", (req, res) => studyController.getTodayItems(req, res));
 
   return router;
 }
