@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/gestao-estudos/static/css/main.b7d8ac51.css",
+    "main.js": "/gestao-estudos/static/js/main.8e61b1dd.js",
+    "index.html": "/gestao-estudos/index.html",
+    "main.b7d8ac51.css.map": "/gestao-estudos/static/css/main.b7d8ac51.css.map",
+    "main.8e61b1dd.js.map": "/gestao-estudos/static/js/main.8e61b1dd.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b7d8ac51.css",
+    "static/js/main.8e61b1dd.js"
+  ]
+}
