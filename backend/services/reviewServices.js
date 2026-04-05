@@ -47,4 +47,50 @@ export class ReviewService {
 
     return await this.reviewRepository.findByDate(date);
   }
+
+  async createReviewSchedule({ subject, topic, date, time, duration }) {
+    // validacao de negocio
+    subject = subject?.trim();
+    topic = topic?.trim();
+    date = date?.trim();
+    time = time?.trim();
+
+    if (!subject) {
+      throw new Error("Matéria inválida");
+    }
+    if (!topic) {
+      throw new Error("Assunto inválido");
+    }
+    if (!date || Number.isNaN(Date.parse(date))) {
+      throw new Error("Data do agendamento inválida");
+    }
+    if (!time) {
+      throw new Error("Horário inválido");
+    }
+    if (typeof duration !== "number" || duration <= 0) {
+      throw new Error("Duração inválida");
+    }
+
+    const review = {
+      subject,
+      topic,
+      reviewDate: date,
+      time,
+      duration,
+      type: "schedule", // para distinguir de revisões automáticas
+    };
+
+    await this.reviewRepository.createReview(review);
+  }
+
+  async getSchedulesByDate(date) {
+    // validacao de negocio
+    date = date?.trim();
+    if (!date || Number.isNaN(Date.parse(date))) {
+      throw new Error("Data inválida");
+    }
+
+    const allReviews = await this.reviewRepository.findByDate(date);
+    return allReviews.filter(review => review.type === "schedule");
+  }
 }

@@ -1,9 +1,8 @@
 // Controller para endpoints de estudos
 export class StudyController {
-  constructor(studyService, reviewService, scheduleService) {
+  constructor(studyService, reviewService) {
     this.studyService = studyService;
     this.reviewService = reviewService;
-    this.scheduleService = scheduleService;
   }
 
   async getAllStudies(req, res) {
@@ -45,7 +44,7 @@ export class StudyController {
     try {
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       const reviews = await this.reviewService.getReviewsByDate(today);
-      const schedules = await this.scheduleService.getSchedulesByDate(today);
+      const schedules = await this.reviewService.getSchedulesByDate(today);
 
       res.json({
         date: today,
