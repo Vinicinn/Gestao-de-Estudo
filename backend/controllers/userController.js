@@ -94,9 +94,11 @@ export class UserController {
         return res.status(400).json({ message: "Nome ou senha incorretos" });
       }
 
-      return res
-        .status(200)
-        .json({ message: "usuario verificado com sucesso" });
+      return res.status(200).json({
+        message: "Usuario verificado com sucesso",
+        id: user._id,
+        name: user.name,
+      });
     } catch (error) {
       return res
         .status(500)

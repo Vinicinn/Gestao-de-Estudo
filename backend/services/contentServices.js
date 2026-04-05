@@ -30,16 +30,25 @@ export class ContentService {
     return content;
   }
 
-  async createContent(userId, name, difficulty) {
+  async createContent(userId, name, subject, difficulty) {
+    const difficultMap = {
+      facil: 20, // retém por ~20 dias
+      medio: 10, // retém por ~10 dias
+      dificil: 4, // retém por ~4 dias
+    };
+
     name = name.trim();
-    const interval = 0;
-    const historic = [];
+    subject = subject.trim();
+    difficulty = difficulty.trim();
+    const stability = difficultMap[difficulty];
+    const lastReviews = [];
+    const nextReviews = [];
 
     // validacao de negocio
     if (!name || name.length < 2) {
       throw new Error("Nome do conteúdo inválido");
     }
-    if (difficulty < 1 || difficulty > 3) {
+    if (!difficultMap[difficulty]) {
       throw new Error("Dificuldade inválida");
     }
     if (!ObjectId.isValid(userId)) {
@@ -49,9 +58,11 @@ export class ContentService {
     await this.contentRepository.create({
       userId,
       name,
+      subject,
       difficulty,
-      interval,
-      historic,
+      stability,
+      lastReviews,
+      nextReviews,
     });
   }
 

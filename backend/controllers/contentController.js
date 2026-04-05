@@ -44,18 +44,28 @@ export class ContentController {
   async createContent(req, res) {
     // validacao de entrada
     try {
-      const { userId, name, difficulty } = req.body;
+      const { userId, name, subject, difficulty } = req.body;
       if (!userId) {
         return res.status(400).json({ message: "ID do usuário é obrigatório" });
       }
       if (!name) {
         return res.status(400).json({ message: "Nome é obrigatório" });
       }
+      if (!subject) {
+        return res
+          .status(400)
+          .json({ message: "Nome da matéria é obrigatório" });
+      }
       if (!difficulty) {
         return res.status(400).json({ message: "Dificuldade é obrigatória" });
       }
       res.json(
-        await this.contentService.createContent(userId, name, difficulty),
+        await this.contentService.createContent(
+          userId,
+          name,
+          subject,
+          difficulty,
+        ),
       );
     } catch (error) {
       res.status(500).json({
@@ -75,6 +85,11 @@ export class ContentController {
       }
       if (!content.name) {
         return res.status(400).json({ message: "Nome é obrigatório" });
+      }
+      if (!content.subject) {
+        return res
+          .status(400)
+          .json({ message: "Nome da matéria é obrigatório" });
       }
       if (!content.difficulty) {
         return res.status(400).json({ message: "Dificuldade é obrigatória" });
