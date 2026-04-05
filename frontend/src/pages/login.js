@@ -2,7 +2,7 @@ import { useState } from "react";
 import { api } from "../services/api.js";
 import "../styles/login.css";
 
-export function Login() {
+export function Login({ onLogin }) {
   const [form, setForm] = useState({
     name: "",
     password: "",
@@ -28,7 +28,7 @@ export function Login() {
       const response = await api.login(form);
 
       if (response) {
-        setError("logado com sucesso");
+        onLogin();
       }
     } catch (error) {
       setError(error.message);
@@ -38,31 +38,36 @@ export function Login() {
   }
 
   return (
-    <div className="page">
-      <div className="window">
-        <p className="title">Gestão de Estudos</p>
-        <p className="subtitle">Faça login para acessar sua conta</p>
-        <form className="form" onSubmit={handleSubmit}>
-          <label className="label">Aluno</label>
+    <div className="login-page">
+      <div className="login-window">
+        <p className="login-title">Gestão de Estudos</p>
+        <p className="login-subtitle">Faça login para acessar sua conta</p>
+        <form className="login-form" onSubmit={handleSubmit}>
+          <label className="login-label">Aluno</label>
           <input
+            className="login-input"
             type="text"
             name="name"
             placeholder="João"
             onChange={handleChange}
           />
-          <label className="label">Senha</label>
+          <label className="login-label">Senha</label>
           <input
+            className="login-input"
             type="password"
             name="password"
             placeholder="*******"
             onChange={handleChange}
           />
 
-          {error && <p className="error">{error}</p>}
-          <button type="submit" disabled={loading}>
+          {error && <p className="login-error">{error}</p>}
+          <button className="login-button" type="submit" disabled={loading}>
             Entrar
           </button>
         </form>
+        <p className="login-footer">
+          Não tem uma conta? <a href="/register">Cadastre-se</a>
+        </p>
       </div>
     </div>
   );
