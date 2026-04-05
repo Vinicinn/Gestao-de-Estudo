@@ -3,6 +3,7 @@ import "./styles/App.css";
 import { Login } from "./pages/login.js";
 import { Register } from "./pages/register.js";
 import { Home } from "./pages/home.js";
+import { Schedule } from "./pages/schedule.js";
 import { useState } from "react";
 
 function App() {
@@ -14,6 +15,10 @@ function App() {
         <Route
           path="/"
           element={isLogged ? <Home /> : <Navigate to={"/login"} />}
+        />
+        <Route
+          path="/schedule"
+          element={isLogged ? <Schedule /> : <Navigate to={"/login"} />}
         />
         <Route
           path="/login"
