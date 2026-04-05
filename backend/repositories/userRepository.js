@@ -27,4 +27,8 @@ export class UserRepository {
   async deleteUser(id) {
     await this.collection.deleteOne({ _id: new ObjectId(id) });
   }
+
+  async getUserByName(name) {
+    return await this.collection.findOne({ name });
+  }
 }

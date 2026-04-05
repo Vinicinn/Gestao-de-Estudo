@@ -77,4 +77,30 @@ export class UserController {
       });
     }
   }
+
+  async loginVerify(req, res) {
+    try {
+      const { name, password } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ message: "Nome invalido" });
+      }
+      if (!password) {
+        return res.status(400).json({ message: "Senha invalida" });
+      }
+
+      const user = await this.userService.getUserByName(name);
+      if (user === null || user.password != password) {
+        return res.status(400).json({ message: "Nome ou senha incorretos" });
+      }
+
+      return res
+        .status(200)
+        .json({ message: "usuario verificado com sucesso" });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Erro ao verificar usuario", error: error.message });
+    }
+  }
 }

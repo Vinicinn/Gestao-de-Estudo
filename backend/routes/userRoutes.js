@@ -8,6 +8,7 @@ export function userRoutes(userController) {
   router.get("/:id", (req, res) => userController.getUserById(req, res));
   router.put("/:id", (req, res) => userController.updateUser(req, res));
   router.delete("/:id", (req, res) => userController.deleteUser(req, res));
+  router.post("/login", (req, res) => userController.loginVerify(req, res));
 
   return router;
 }

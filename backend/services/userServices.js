@@ -86,4 +86,12 @@ export class UserService {
 
     await this.userRepository.deleteUser(id);
   }
+
+  async getUserByName(name) {
+    if (!name) {
+      throw new Error("Nome invalido");
+    }
+
+    return await this.userRepository.getUserByName(name);
+  }
 }
