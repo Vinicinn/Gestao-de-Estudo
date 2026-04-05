@@ -34,4 +34,20 @@ export const api = {
 
     return data.message;
   },
+
+  async createStudy({ subject, topic, initialDate }) {
+    const response = await fetch(`${URL}/studies`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subject, topic, initialDate }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    return data.message;
+  },
 };

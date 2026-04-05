@@ -3,6 +3,7 @@ import "./styles/App.css";
 import { Login } from "./pages/login.js";
 import { Register } from "./pages/register.js";
 import { Home } from "./pages/home.js";
+import { Study } from "./pages/study.js";
 import { useState } from "react";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           }
         />
         <Route path="/register" element={<Register />} />
+        <Route path="/study" element={<Study />} />
       </Routes>
     </HashRouter>
   );
