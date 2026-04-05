@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../services/api.js";
 import "../styles/login.css";
+import { Link } from "react-router-dom";
 
 export function Login({ onLogin }) {
   const [form, setForm] = useState({
@@ -66,7 +67,8 @@ export function Login({ onLogin }) {
           </button>
         </form>
         <p className="login-footer">
-          Não tem uma conta? <a href="/register">Cadastre-se</a>
+          Não tem uma conta?
+          <Link to="/register">Cadastre-se</Link>
         </p>
       </div>
     </div>

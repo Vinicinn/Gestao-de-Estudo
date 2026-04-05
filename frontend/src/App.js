@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./styles/App.css";
 import { Login } from "./pages/login.js";
 import { Register } from "./pages/register.js";
@@ -9,7 +9,7 @@ function App() {
   const [isLogged, setIsLogged] = useState(false);
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route
           path="/"
@@ -27,7 +27,7 @@ function App() {
         />
         <Route path="/register" element={<Register />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
