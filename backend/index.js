@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 // variaveis de ambiente
 dotenv.config();
 
@@ -53,6 +54,7 @@ const reviewController = new ReviewController(reviewService);
 const scheduleController = new ScheduleController(scheduleService);
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // rotas
