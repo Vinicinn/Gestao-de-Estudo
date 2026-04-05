@@ -9,7 +9,7 @@ function App() {
   const [isLogged, setIsLogged] = useState(false);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/Gestao-de-Estudo">
       <Routes>
         <Route
           path="/"
