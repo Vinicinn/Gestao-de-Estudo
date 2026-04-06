@@ -18,6 +18,10 @@ function App() {
           element={isLogged ? <Home user={user} /> : <Navigate to={"/login"} />}
         />
         <Route
+          path="/schedule"
+          element={isLogged ? <Schedule /> : <Navigate to={"/login"} />}
+        />
+        <Route
           path="/login"
           element={
             isLogged ? (

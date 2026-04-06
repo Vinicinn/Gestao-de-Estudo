@@ -59,4 +59,20 @@ export const api = {
     }
     return data;
   },
+
+  async createSchedule({ subject, topic, date, time, duration }) {
+    const response = await fetch(`${URL}/reviews/schedule`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subject, topic, date, time, duration }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    return data.message;
+  },
 };
