@@ -29,8 +29,11 @@ export class ReviewController {
   async createReviewSchedule(req, res) {
     // validacao de entrada
     try {
-      const { subject, topic, date, time, duration } = req.body;
+      const { userId, subject, topic, date, time, duration } = req.body;
 
+      if (!userId) {
+        return res.status(400).json({ message: "ID do usuário é obrigatório" });
+      }
       if (!subject) {
         return res.status(400).json({ message: "Matéria é obrigatória" });
       }
@@ -55,6 +58,7 @@ export class ReviewController {
       }
 
       await this.reviewService.createReviewSchedule({
+        userId,
         subject,
         topic,
         date,
@@ -66,6 +70,21 @@ export class ReviewController {
     } catch (error) {
       res.status(500).json({
         message: "Error ao criar agendamento",
+        error: error.message,
+      });
+    }
+  }
+
+  async getUserSchedules(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ message: "ID do usuário é obrigatório" });
+      }
+      res.json(await this.reviewService.getUserSchedules(id));
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao buscar agendamentos do usuário",
         error: error.message,
       });
     }

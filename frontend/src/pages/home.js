@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export function Home({ user }) {
   const [contents, setContents] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const navigate = useNavigate();
 
   const today = new Date().toLocaleDateString("pt-BR", {
@@ -17,14 +18,22 @@ export function Home({ user }) {
   useEffect(() => {
     async function loadData() {
       try {
-        const data = await api.getUserContents(user.id);
-        setContents(data);
-        console.log(data);
-        
+        const [contentData, scheduleData] = await Promise.all([
+          api.getUserContents(user.id),
+          api.getUserSchedules(user.id),
+        ]);
+        setContents(contentData);
+        setSchedules(scheduleData);
       } catch (error) {}
     }
     loadData();
   }, [user.id]);
+
+  const difficultyLabel = { facil: "Fácil", medio: "Médio", dificil: "Difícil" };
+
+  const recommendations = contents.filter(
+    (c) => !c.lastReviews || c.lastReviews.length === 0
+  );
 
   return (
     <div className="home-page">
@@ -56,14 +65,34 @@ export function Home({ user }) {
         </div>
         <div className="home-card">
           <p className="home-card-title">Recomendação de Revisões</p>
-          <p className="home-empty">Nenhuma recomendação cadastrado.</p>
+          {recommendations.length === 0 ? (
+            <p className="home-empty">Nenhuma recomendação no momento.</p>
+          ) : (
+            recommendations.map((content) => (
+              <div className="home-item" key={content._id}>
+                <p className="home-item-title">{content.name}</p>
+                <p className="home-item-sub">
+                  {content.subject} · {difficultyLabel[content.difficulty] ?? content.difficulty}
+                </p>
+              </div>
+            ))
+          )}
         </div>
         <div className="home-card">
           <div className="card-header">
-          <p className="home-card-title">Agendamentos</p>
-          <button className="card-header-button" onClick={()=> {navigate("/schedule")}}>+</button>
+            <p className="home-card-title">Agendamentos</p>
+            <button className="card-header-button" onClick={() => navigate("/schedule")}>+</button>
           </div>
-          <p className="home-empty">Nenhum agendamento cadastrado.</p>
+          {schedules.length === 0 ? (
+            <p className="home-empty">Nenhum agendamento cadastrado.</p>
+          ) : (
+            schedules.map((schedule) => (
+              <div className="home-item" key={schedule._id}>
+                <p className="home-item-title">{schedule.subject} — {schedule.topic}</p>
+                <p className="home-item-sub">{schedule.reviewDate} às {schedule.time} · {schedule.duration} min</p>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

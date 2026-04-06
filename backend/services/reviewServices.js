@@ -48,13 +48,16 @@ export class ReviewService {
     return await this.reviewRepository.findByDate(date);
   }
 
-  async createReviewSchedule({ subject, topic, date, time, duration }) {
+  async createReviewSchedule({ userId, subject, topic, date, time, duration }) {
     // validacao de negocio
     subject = subject?.trim();
     topic = topic?.trim();
     date = date?.trim();
     time = time?.trim();
 
+    if (!userId) {
+      throw new Error("ID do usuário é obrigatório");
+    }
     if (!subject) {
       throw new Error("Matéria inválida");
     }
@@ -72,15 +75,23 @@ export class ReviewService {
     }
 
     const review = {
+      userId,
       subject,
       topic,
       reviewDate: date,
       time,
       duration,
-      type: "schedule", // para distinguir de revisões automáticas
+      type: "schedule",
     };
 
     await this.reviewRepository.createReview(review);
+  }
+
+  async getUserSchedules(userId) {
+    if (!userId) {
+      throw new Error("ID do usuário é obrigatório");
+    }
+    return await this.reviewRepository.findSchedulesByUserId(userId);
   }
 
   async getSchedulesByDate(date) {

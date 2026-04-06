@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../services/api.js";
 import "../styles/schedule.css";
 
-export function Schedule() {
+export function Schedule({ user }) {
   const [form, setForm] = useState({
     subject: "",
     topic: "",
@@ -51,7 +51,9 @@ export function Schedule() {
     setLoading(true);
 
     try {
-      await api.createSchedule(form);
+      await api.createSchedule({ userId: user.id, ...form });
+      setSuccess("Agendamento criado com sucesso!");
+      setForm({ subject: "", topic: "", date: "", time: "", duration: 0 });
     } catch (error) {
       setError(error.message);
     } finally {

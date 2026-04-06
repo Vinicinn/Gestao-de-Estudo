@@ -1,5 +1,5 @@
-const URL = "https://gestao-de-estudo.onrender.com/api";
-// em dev   - http://localhost:3001/api
+const URL = "/api";
+// em dev   - /api (proxy via package.json para localhost:3001)
 // em prod  - https://gestao-de-estudo.onrender.com/api
 
 export const api = {
@@ -60,11 +60,11 @@ export const api = {
     return data;
   },
 
-  async createSchedule({ subject, topic, date, time, duration }) {
+  async createSchedule({ userId, subject, topic, date, time, duration }) {
     const response = await fetch(`${URL}/reviews/schedule`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject, topic, date, time, duration }),
+      body: JSON.stringify({ userId, subject, topic, date, time, duration }),
     });
 
     const data = await response.json();
@@ -74,5 +74,14 @@ export const api = {
     }
 
     return data.message;
+  },
+
+  async getUserSchedules(userId) {
+    const response = await fetch(`${URL}/reviews/schedule/user/${userId}`);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+    return data;
   },
 };

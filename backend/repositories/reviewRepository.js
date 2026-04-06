@@ -15,4 +15,10 @@ export class ReviewRepository {
   async findByDate(date) {
     return await this.collection.find({ reviewDate: date }).toArray();
   }
+
+  async findSchedulesByUserId(userId) {
+    return await this.collection
+      .find({ userId, type: "schedule" })
+      .toArray();
+  }
 }

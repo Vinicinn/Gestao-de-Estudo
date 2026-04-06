@@ -121,4 +121,19 @@ export class ContentController {
       });
     }
   }
+
+  async getUserRecommendations(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ message: "ID do usuário é obrigatório" });
+      }
+      res.json(await this.contentService.getUserRecommendations(id));
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao buscar recomendações",
+        error: error.message,
+      });
+    }
+  }
 }

@@ -5,6 +5,7 @@ export function reviewRoutes(reviewController) {
 
   router.get("/", (req, res) => reviewController.getAllReviews(req, res));
   router.post("/schedule", (req, res) => reviewController.createReviewSchedule(req, res));
+  router.get("/schedule/user/:id", (req, res) => reviewController.getUserSchedules(req, res));
   router.get("/date/:date", (req, res) => reviewController.getReviewsByDate(req, res));
 
   return router;

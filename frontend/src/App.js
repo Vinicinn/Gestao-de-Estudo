@@ -43,7 +43,7 @@ function App() {
         />
         <Route
           path="/schedule"
-          element={isLogged ? <Schedule /> : <Navigate to={"/login"} />}
+          element={isLogged ? <Schedule user={user} /> : <Navigate to={"/login"} />}
         />
       </Routes>
     </HashRouter>
