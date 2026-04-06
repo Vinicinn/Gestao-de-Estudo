@@ -40,7 +40,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  column-gap: 10px
+  column-gap: 10px;
 }
 .card-header-button {
   width: 30px;
@@ -52,4 +52,23 @@
   margin-bottom: 15px;
   margin-top: 15px;
   color: #9b9b79;
+}
+.home-item {
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+}
+.home-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+.home-item-sub {
+  font-size: 13px;
+  color: #888;
+  margin-top: 2px;
+  margin-bottom: 5px;
+}
+.home-item:last-child {
+  border-bottom: 1px solid rgb(151, 151, 151);
 }

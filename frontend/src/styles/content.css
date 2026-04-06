@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:frontend/src/styles/content.css
 .content-page {
-========
-.schedule-page {
->>>>>>>> b60cb7b340f035435268389969972992aafff480:frontend/src/styles/schedule.css
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: #9b9b79;
   justify-content: center;
@@ -11,11 +7,7 @@
   display: flex;
   height: 100vh;
 }
-<<<<<<<< HEAD:frontend/src/styles/content.css
 .content-window {
-========
-.schedule-window {
->>>>>>>> b60cb7b340f035435268389969972992aafff480:frontend/src/styles/schedule.css
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: #fff;
   justify-content: center;
@@ -23,38 +15,25 @@
   border-radius: 8px;
   align-items: start;
   display: flex;
-  width: 420px;
+  width: 400px;
   padding: 40px;
-  row-gap: 10px;
+  row-gap: 8px;
 }
-<<<<<<<< HEAD:frontend/src/styles/content.css
 .content-title {
-========
-.schedule-title {
->>>>>>>> b60cb7b340f035435268389969972992aafff480:frontend/src/styles/schedule.css
   font-size: 24px;
   color: #9b9b79;
   font-weight: bold;
 }
-<<<<<<<< HEAD:frontend/src/styles/content.css
 .content-subtitle {
   font-size: 16px;
 }
 
 .content-form {
-========
-.schedule-subtitle {
-  font-size: 16px;
-}
-
-.schedule-form {
->>>>>>>> b60cb7b340f035435268389969972992aafff480:frontend/src/styles/schedule.css
   flex-direction: column;
   display: flex;
-  row-gap: 10px;
-  width: 100%;
+  row-gap: 8px;
+  width: 90%;
 }
-<<<<<<<< HEAD:frontend/src/styles/content.css
 .content-label {
   font-size: 16px;
 }
@@ -64,51 +43,18 @@
   color: red;
 }
 .content-input {
-========
-.schedule-label {
-  font-size: 16px;
-}
-.schedule-input {
->>>>>>>> b60cb7b340f035435268389969972992aafff480:frontend/src/styles/schedule.css
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-<<<<<<<< HEAD:frontend/src/styles/content.css
 .content-button {
-========
-.schedule-error {
-  margin-bottom: 5px;
-  font-size: 14px;
-  color: red;
-}
-.schedule-success {
-  margin-bottom: 5px;
-  font-size: 14px;
-  color: #2e7d32;
-}
-.schedule-button {
->>>>>>>> b60cb7b340f035435268389969972992aafff480:frontend/src/styles/schedule.css
   align-self: center;
   width: 100%;
-  padding: 10px;
+  padding: 5px;
   background-color: #9b9b79;
   border: none;
   border-radius: 5px;
   color: white;
   font-weight: bold;
   cursor: pointer;
-<<<<<<<< HEAD:frontend/src/styles/content.css
 }
-========
-}
-.schedule-footer {
-  margin-top: 10px;
-  font-size: 14px;
-}
-.schedule-footer a {
-  color: #9b9b79;
-  text-decoration: none;
-  font-weight: bold;
-}
->>>>>>>> b60cb7b340f035435268389969972992aafff480:frontend/src/styles/schedule.css

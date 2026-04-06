@@ -48,8 +48,8 @@ export function Home({ user }) {
           ) : (
             contents.map((content) => (
               <div className="home-item" key={content._id}>
-                <p className="home-item-title">{content.subject}</p>
-                <p className="home-item-sub">{content.topic}</p>
+                <p className="home-item-title">{content.name}</p>
+                <p className="home-item-sub">{content.subject}</p>
               </div>
             ))
           )}

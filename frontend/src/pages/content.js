@@ -23,10 +23,6 @@ export function Content({ user }) {
     event.preventDefault();
     setError("");
 
-    console.log(user.id);
-
-    console.log(form);
-
     if (!form.name || !form.subject || !form.difficulty) {
       setError("Preencha todos os campos");
       return;

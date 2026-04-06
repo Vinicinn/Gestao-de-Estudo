@@ -1,10 +1,12 @@
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
 import "./styles/App.css";
+
 import { Login } from "./pages/login.js";
 import { Register } from "./pages/register.js";
 import { Home } from "./pages/home.js";
 import { Content } from "./pages/content.js";
-import { useState } from "react";
+import { Schedule } from "./pages/schedule.js";
 
 function App() {
   const [isLogged, setIsLogged] = useState(false);
@@ -16,10 +18,6 @@ function App() {
         <Route
           path="/"
           element={isLogged ? <Home user={user} /> : <Navigate to={"/login"} />}
-        />
-        <Route
-          path="/schedule"
-          element={isLogged ? <Schedule /> : <Navigate to={"/login"} />}
         />
         <Route
           path="/login"
@@ -42,6 +40,10 @@ function App() {
           element={
             isLogged ? <Content user={user} /> : <Navigate to={"/login"} />
           }
+        />
+        <Route
+          path="/schedule"
+          element={isLogged ? <Schedule /> : <Navigate to={"/login"} />}
         />
       </Routes>
     </HashRouter>
