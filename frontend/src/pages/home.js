@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 export function Home({ user }) {
   const [contents, setContents] = useState([]);
   const [schedules, setSchedules] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const navigate = useNavigate();
 
   const today = new Date().toLocaleDateString("pt-BR", {
@@ -18,22 +19,20 @@ export function Home({ user }) {
   useEffect(() => {
     async function loadData() {
       try {
-        const [contentData, scheduleData] = await Promise.all([
+        const [contentData, scheduleData, recData] = await Promise.all([
           api.getUserContents(user.id),
           api.getUserSchedules(user.id),
+          api.getUserRecommendations(user.id),
         ]);
         setContents(contentData);
         setSchedules(scheduleData);
+        setRecommendations(recData);
       } catch (error) {}
     }
     loadData();
   }, [user.id]);
 
   const difficultyLabel = { facil: "Fácil", medio: "Médio", dificil: "Difícil" };
-
-  const recommendations = contents.filter(
-    (c) => !c.lastReviews || c.lastReviews.length === 0
-  );
 
   return (
     <div className="home-page">
@@ -72,7 +71,7 @@ export function Home({ user }) {
               <div className="home-item" key={content._id}>
                 <p className="home-item-title">{content.name}</p>
                 <p className="home-item-sub">
-                  {content.subject} · {difficultyLabel[content.difficulty] ?? content.difficulty}
+                  {content.subject} · Revisão: {new Date(content.nextReviewDate + "T00:00:00").toLocaleDateString("pt-BR")}
                 </p>
               </div>
             ))

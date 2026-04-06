@@ -84,4 +84,13 @@ export const api = {
     }
     return data;
   },
+
+  async getUserRecommendations(userId) {
+    const response = await fetch(`${URL}/contents/user/${userId}/recommendations`);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+    return data;
+  },
 };
