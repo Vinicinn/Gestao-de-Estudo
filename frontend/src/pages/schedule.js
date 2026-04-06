@@ -9,14 +9,20 @@ export function Schedule() {
     topic: "",
     date: "",
     time: "",
-    duration: "",
+    duration: 0,
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   function handleChange(event) {
-    setForm({ ...form, [event.target.name]: event.target.value });
+    setForm({
+      ...form,
+      [event.target.name]:
+        event.target.name === "duration"
+          ? Number(event.target.value)
+          : event.target.value,
+    });
     setError("");
     setSuccess("");
   }
@@ -37,19 +43,15 @@ export function Schedule() {
       return;
     }
 
+    if (!Number.isInteger(form.duration)) {
+      setError("A duração só pode ser numero");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await api.createSchedule({
-        subject: form.subject,
-        topic: form.topic,
-        date: form.date,
-        time: form.time,
-        duration: Number(form.duration),
-      });
-
-      setSuccess("Agendamento criado com sucesso.");
-      setForm({ subject: "", topic: "", date: "", time: "", duration: "" });
+      await api.createSchedule(form);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -61,7 +63,9 @@ export function Schedule() {
     <div className="schedule-page">
       <div className="schedule-window">
         <p className="schedule-title">Agendar revisão</p>
-        <p className="schedule-subtitle">Registre um horário de estudo planejado</p>
+        <p className="schedule-subtitle">
+          Registre um horário de estudo planejado
+        </p>
 
         <form className="schedule-form" onSubmit={handleSubmit}>
           <label className="schedule-label">Matéria</label>

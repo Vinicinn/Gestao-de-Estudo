@@ -59,7 +59,10 @@ export function Home({ user }) {
           <p className="home-empty">Nenhuma recomendação cadastrado.</p>
         </div>
         <div className="home-card">
+          <div className="card-header">
           <p className="home-card-title">Agendamentos</p>
+          <button className="card-header-button" onClick={()=> {navigate("/schedule")}}>+</button>
+          </div>
           <p className="home-empty">Nenhum agendamento cadastrado.</p>
         </div>
       </div>

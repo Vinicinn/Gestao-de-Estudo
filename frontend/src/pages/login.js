@@ -68,7 +68,7 @@ export function Login({ onLogin }) {
         </form>
         <p className="login-footer">
           Não tem uma conta?
-          <Link to="/register">Cadastre-se</Link>
+          <Link className="login-register-link" to="/register"> Cadastre-se</Link>
         </p>
       </div>
     </div>

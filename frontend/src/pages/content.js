@@ -2,6 +2,7 @@ import { useState } from "react";
 import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import "../styles/content.css";
+import { Link } from "react-router-dom";
 
 export function Content({ user }) {
   const [form, setForm] = useState({
@@ -86,6 +87,7 @@ export function Content({ user }) {
             {loading ? "Registrando..." : "Registrar"}
           </button>
         </form>
+        <Link className="content-return-link" to="/">Voltar ao dashboard</Link>
       </div>
     </div>
   );

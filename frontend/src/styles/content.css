@@ -58,3 +58,8 @@
   font-weight: bold;
   cursor: pointer;
 }
+.content-return-link {
+  color: #9b9b79;
+  text-decoration: none;
+  font-weight: bold;
+}
