@@ -1,0 +1,74 @@
+.schedule-page {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #9b9b79;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+  height: 100vh;
+}
+.schedule-window {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  justify-content: center;
+  flex-direction: column;
+  border-radius: 8px;
+  align-items: start;
+  display: flex;
+  width: 420px;
+  padding: 40px;
+  row-gap: 10px;
+}
+.schedule-title {
+  font-size: 24px;
+  color: #9b9b79;
+  font-weight: bold;
+}
+.schedule-subtitle {
+  font-size: 16px;
+}
+
+.schedule-form {
+  flex-direction: column;
+  display: flex;
+  row-gap: 10px;
+  width: 100%;
+}
+.schedule-label {
+  font-size: 16px;
+}
+.schedule-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.schedule-error {
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: red;
+}
+.schedule-success {
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #2e7d32;
+}
+.schedule-button {
+  align-self: center;
+  width: 100%;
+  padding: 10px;
+  background-color: #9b9b79;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+.schedule-footer {
+  margin-top: 10px;
+  font-size: 14px;
+}
+.schedule-footer a {
+  color: #9b9b79;
+  text-decoration: none;
+  font-weight: bold;
+}

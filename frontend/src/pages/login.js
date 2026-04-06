@@ -29,7 +29,7 @@ export function Login({ onLogin }) {
       const response = await api.login(form);
 
       if (response) {
-        onLogin();
+        onLogin({ id: response.id, name: response.name });
       }
     } catch (error) {
       setError(error.message);

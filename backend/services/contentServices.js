@@ -55,7 +55,7 @@ export class ContentService {
       throw new Error("ID de usuário inválido");
     }
 
-    await this.contentRepository.create({
+    return await this.contentRepository.create({
       userId,
       name,
       subject,

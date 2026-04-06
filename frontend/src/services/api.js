@@ -16,7 +16,7 @@ export const api = {
       throw new Error(data.message);
     }
 
-    return data.message;
+    return data;
   },
 
   async register(name, password) {
@@ -35,11 +35,11 @@ export const api = {
     return data.message;
   },
 
-  async createStudy({ subject, topic, initialDate }) {
-    const response = await fetch(`${URL}/studies`, {
+  async createContent({ userId, name, subject, difficulty }) {
+    const response = await fetch(`${URL}/contents`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject, topic, initialDate }),
+      body: JSON.stringify({ userId, name, subject, difficulty }),
     });
 
     const data = await response.json();
@@ -48,6 +48,15 @@ export const api = {
       throw new Error(data.message);
     }
 
-    return data.message;
+    return data;
+  },
+
+  async getUserContents(userId) {
+    const response = await fetch(`${URL}/contents/user/${userId}`);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+    return data;
   },
 };

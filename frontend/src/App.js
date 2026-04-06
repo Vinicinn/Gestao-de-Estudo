@@ -3,18 +3,19 @@ import "./styles/App.css";
 import { Login } from "./pages/login.js";
 import { Register } from "./pages/register.js";
 import { Home } from "./pages/home.js";
-import { Study } from "./pages/study.js";
+import { Content } from "./pages/content.js";
 import { useState } from "react";
 
 function App() {
   const [isLogged, setIsLogged] = useState(false);
+  const [user, setUser] = useState(null);
 
   return (
     <HashRouter>
       <Routes>
         <Route
           path="/"
-          element={isLogged ? <Home /> : <Navigate to={"/login"} />}
+          element={isLogged ? <Home user={user} /> : <Navigate to={"/login"} />}
         />
         <Route
           path="/login"
@@ -22,12 +23,22 @@ function App() {
             isLogged ? (
               <Navigate to={"/"} />
             ) : (
-              <Login onLogin={() => setIsLogged(true)} />
+              <Login
+                onLogin={(user) => {
+                  setIsLogged(true);
+                  setUser(user);
+                }}
+              />
             )
           }
         />
         <Route path="/register" element={<Register />} />
-        <Route path="/study" element={<Study />} />
+        <Route
+          path="/content"
+          element={
+            isLogged ? <Content user={user} /> : <Navigate to={"/login"} />
+          }
+        />
       </Routes>
     </HashRouter>
   );

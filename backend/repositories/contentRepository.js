@@ -18,7 +18,7 @@ export class ContentRepository {
   }
 
   async create(content) {
-    await this.collection.insertOne(content);
+    return await this.collection.insertOne(content);
   }
 
   async update(id, content) {

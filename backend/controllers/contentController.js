@@ -59,7 +59,7 @@ export class ContentController {
       if (!difficulty) {
         return res.status(400).json({ message: "Dificuldade é obrigatória" });
       }
-      res.json(
+      return res.json(
         await this.contentService.createContent(
           userId,
           name,

@@ -1,22 +1,58 @@
+import { useEffect, useState } from "react";
 import "../styles/home.css";
+import { api } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
-export function Home() {
+export function Home({ user }) {
+  const [contents, setContents] = useState([]);
+  const navigate = useNavigate();
+
   const today = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await api.getUserContents(user.id);
+        setContents(data);
+        console.log(data);
+        
+      } catch (error) {}
+    }
+    loadData();
+  }, [user.id]);
+
   return (
     <div className="home-page">
       <div className="home-header">
-        <h1>Olá, usuario</h1>
+        <h1>Olá, {user.name}</h1>
         <span>{today}</span>
       </div>
       <div className="home-window">
         <div className="home-card">
-          <p className="home-card-title">Meus conteúdos</p>
-          <p className="home-empty">Nenhum conteúdo cadastrado.</p>
+          <div className="card-header">
+            <p className="home-card-title">Meus conteúdos</p>
+            <button
+              className="card-header-button"
+              onClick={() => navigate("/content")}
+            >
+              +
+            </button>
+          </div>
+          {contents.length === 0 ? (
+            <p className="home-empty">Nenhum conteúdo cadastrado.</p>
+          ) : (
+            contents.map((content) => (
+              <div className="home-item" key={content._id}>
+                <p className="home-item-title">{content.subject}</p>
+                <p className="home-item-sub">{content.topic}</p>
+              </div>
+            ))
+          )}
         </div>
         <div className="home-card">
           <p className="home-card-title">Recomendação de Revisões</p>
