@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/Gestao-de-Estudo/static/css/main.b5124f05.css",
-    "main.js": "/Gestao-de-Estudo/static/js/main.0b2ee1b2.js",
+    "main.js": "/Gestao-de-Estudo/static/js/main.2a44e3d4.js",
     "index.html": "/Gestao-de-Estudo/index.html",
     "main.b5124f05.css.map": "/Gestao-de-Estudo/static/css/main.b5124f05.css.map",
-    "main.0b2ee1b2.js.map": "/Gestao-de-Estudo/static/js/main.0b2ee1b2.js.map"
+    "main.2a44e3d4.js.map": "/Gestao-de-Estudo/static/js/main.2a44e3d4.js.map"
   },
   "entrypoints": [
     "static/css/main.b5124f05.css",
-    "static/js/main.0b2ee1b2.js"
+    "static/js/main.2a44e3d4.js"
   ]
 }
