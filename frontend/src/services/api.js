@@ -1,4 +1,4 @@
-const URL = "/api";
+const URL = "https://gestao-de-estudo.onrender.com/api";
 // em dev   - /api (proxy via package.json para localhost:3001)
 // em prod  - https://gestao-de-estudo.onrender.com/api
 
