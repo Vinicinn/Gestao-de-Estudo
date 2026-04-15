@@ -8,6 +8,7 @@ export function contentRoutes(contentController) {
   router.get("/user/:id/recommendations", (req, res) => contentController.getUserRecommendations(req, res));
   router.post("/", (req, res) => contentController.createContent(req, res));
   router.get("/:id", (req, res) => contentController.getContentById(req, res));
+  router.post("/:id/feedback", (req, res) => contentController.submitContentFeedback(req, res));
   router.put("/:id", (req, res) => contentController.updateContent(req, res));
   router.delete("/:id", (req, res) => contentController.deleteContent(req, res));
 

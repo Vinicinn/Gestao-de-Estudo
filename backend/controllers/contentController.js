@@ -136,4 +136,26 @@ export class ContentController {
       });
     }
   }
+
+  async submitContentFeedback(req, res) {
+    try {
+      const { id } = req.params;
+      const { quality } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ message: "ID é obrigatório" });
+      }
+      if (!quality && quality !== 0) {
+        return res.status(400).json({ message: "Qualidade é obrigatória" });
+      }
+
+      const updatedContent = await this.contentService.submitFeedback(id, quality);
+      res.json(updatedContent);
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao enviar feedback",
+        error: error.message,
+      });
+    }
+  }
 }

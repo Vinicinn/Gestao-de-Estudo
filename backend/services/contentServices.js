@@ -99,6 +99,70 @@ export class ContentService {
     await this.contentRepository.delete(id);
   }
 
+  calculateNextReviews(startDate, interval) {
+    return [interval, interval * 2, interval * 4].map((days) => {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + days);
+      return date.toISOString().split("T")[0];
+    });
+  }
+
+  async submitFeedback(id, quality) {
+    if (!ObjectId.isValid(id)) {
+      throw new Error("ID inválido");
+    }
+
+    const content = await this.contentRepository.findById(id);
+    if (content === null) {
+      throw new Error("Conteúdo não encontrado");
+    }
+
+    const qualityMap = {
+      facil: 5,
+      normal: 3,
+      dificil: 2,
+      esqueci: 0,
+    };
+
+    const normalized =
+      typeof quality === "string" ? quality.trim().toLowerCase() : quality;
+    const qualityValue =
+      typeof normalized === "number"
+        ? normalized
+        : qualityMap[normalized];
+
+    if (qualityValue === undefined || qualityValue < 0 || qualityValue > 5) {
+      throw new Error("Qualidade inválida");
+    }
+
+    const feedbackType =
+      typeof normalized === "string"
+        ? normalized
+        : normalized === 5
+        ? "facil"
+        : normalized >= 3
+        ? "normal"
+        : normalized === 2
+        ? "dificil"
+        : "esqueci";
+
+    const today = new Date().toISOString().split("T")[0];
+
+    const lastReviews = [
+      ...(content.lastReviews || []),
+      { date: today, quality: feedbackType },
+    ];
+
+    await this.contentRepository.update(id, {
+      lastReviews,
+    });
+
+    return {
+      ...content,
+      lastReviews,
+    };
+  }
+
   async getUserRecommendations(userId) {
     if (!ObjectId.isValid(userId)) {
       throw new Error("ID de usuário inválido");
