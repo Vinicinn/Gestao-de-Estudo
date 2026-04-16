@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../styles/home.css";
 import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 export function Home({ user }) {
   const [contents, setContents] = useState([]);
   const [schedules, setSchedules] = useState([]);
+  const [reviewHistory, setReviewHistory] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [editingRecommendationId, setEditingRecommendationId] = useState(null);
   const [adjustDateValue, setAdjustDateValue] = useState("");
@@ -22,13 +23,15 @@ export function Home({ user }) {
   useEffect(() => {
     async function loadData() {
       try {
-        const [contentData, scheduleData, recData] = await Promise.all([
+        const [contentData, scheduleData, historyData, recData] = await Promise.all([
           api.getUserContents(user.id),
           api.getUserSchedules(user.id),
+          api.getUserReviewHistory(user.id),
           api.getUserRecommendations(user.id),
         ]);
         setContents(contentData);
         setSchedules(scheduleData);
+        setReviewHistory(historyData.reviews || []);
         setRecommendations(recData);
       } catch (error) {}
     }
@@ -38,6 +41,61 @@ export function Home({ user }) {
   function formatDate(date) {
     return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
   }
+
+  const allReviewHistory = useMemo(() => {
+    const contentNameById = new Map(
+      contents.map((content) => [content._id, `${content.name} - ${content.subject}`]),
+    );
+
+    const systemReviewsFromContents = contents.flatMap((content) =>
+      (content.nextReviews || []).map((date) => ({
+        id: `system-${content._id}-${date}`,
+        title: `${content.name} - ${content.subject}`,
+        source: "Sistema",
+        date,
+      })),
+    );
+
+    const systemReviewsFromRecommendations = recommendations.flatMap((content) => {
+      const baseTitle = `${content.name} - ${content.subject}`;
+      const dates = Array.isArray(content.nextReviews) && content.nextReviews.length > 0
+        ? content.nextReviews
+        : content.nextReviewDate
+        ? [content.nextReviewDate]
+        : [];
+
+      return dates.map((date) => ({
+        id: `system-${content._id}-${date}`,
+        title: baseTitle,
+        source: "Sistema",
+        date,
+      }));
+    });
+
+    const systemReviewById = new Map(
+      [...systemReviewsFromContents, ...systemReviewsFromRecommendations].map((review) => [review.id, review]),
+    );
+    const systemReviews = [...systemReviewById.values()];
+
+    const scheduledReviews = schedules.map((schedule) => ({
+      id: `schedule-${schedule._id}`,
+      title: `${schedule.subject} - ${schedule.topic}`,
+      source: "Usuário (agendamento)",
+      date: schedule.reviewDate,
+      time: schedule.time,
+    }));
+
+    const completedReviews = reviewHistory.map((review) => ({
+      id: `completed-${review._id}`,
+      title: contentNameById.get(String(review.contentId)) || "Conteúdo",
+      source: "Usuário (concluída)",
+      date: review.reviewDate,
+    }));
+
+    return [...systemReviews, ...scheduledReviews, ...completedReviews]
+      .filter((review) => review.date)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [contents, schedules, reviewHistory, recommendations]);
 
   function handleStartAdjust(content) {
     setEditingRecommendationId(content._id);
@@ -181,21 +239,42 @@ export function Home({ user }) {
             ))
           )}
         </div>
-        <div className="home-card">
-          <div className="card-header">
-            <p className="home-card-title">Agendamentos</p>
-            <button className="card-header-button" onClick={() => navigate("/schedule")}>+</button>
+        <div className="home-stack-column">
+          <div className="home-card home-card-half">
+            <div className="card-header">
+              <p className="home-card-title">Agendamentos</p>
+              <button className="card-header-button" onClick={() => navigate("/schedule")}>+</button>
+            </div>
+            {schedules.length === 0 ? (
+              <p className="home-empty">Nenhum agendamento cadastrado.</p>
+            ) : (
+              schedules.map((schedule) => (
+                <div className="home-item" key={schedule._id}>
+                  <p className="home-item-title">{schedule.subject} - {schedule.topic}</p>
+                  <p className="home-item-sub">{formatDate(schedule.reviewDate)} às {schedule.time} · {schedule.duration} min</p>
+                </div>
+              ))
+            )}
           </div>
-          {schedules.length === 0 ? (
-            <p className="home-empty">Nenhum agendamento cadastrado.</p>
-          ) : (
-            schedules.map((schedule) => (
-              <div className="home-item" key={schedule._id}>
-                <p className="home-item-title">{schedule.subject} — {schedule.topic}</p>
-                <p className="home-item-sub">{schedule.reviewDate} às {schedule.time} · {schedule.duration} min</p>
-              </div>
-            ))
-          )}
+
+          <div className="home-card home-card-half">
+            <p className="home-card-title">Histórico de revisões</p>
+            <div className="home-history-scroll">
+              {allReviewHistory.length === 0 ? (
+                <p className="home-empty">Nenhuma revisão registrada ainda.</p>
+              ) : (
+                allReviewHistory.map((review) => (
+                  <div className="home-item" key={review.id}>
+                    <p className="home-item-title">{review.title}</p>
+                    <p className="home-item-sub">
+                      {review.source} · {formatDate(review.date)}
+                      {review.time ? ` às ${review.time}` : ""}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
