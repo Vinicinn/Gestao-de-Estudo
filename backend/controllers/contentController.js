@@ -158,4 +158,48 @@ export class ContentController {
       });
     }
   }
+
+  async updateReviewDates(req, res) {
+    try {
+      const { id } = req.params;
+      const { nextReviews } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
+      }
+      if (!nextReviews) {
+        return res.status(400).json({ message: "Próximas revisões são obrigatórias" });
+      }
+
+      const updatedContent = await this.contentService.updateReviewDates(id, nextReviews);
+      res.json({
+        message: "Datas de revisão atualizadas com sucesso",
+        content: updatedContent,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao atualizar datas de revisão",
+        error: error.message,
+      });
+    }
+  }
+
+  async getReviewDatesInfo(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
+      }
+
+      const info = await this.contentService.validateReviewDates(id);
+      res.json(info);
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao buscar informações de revisão",
+        error: error.message,
+      });
+    }
+  }
 }
+

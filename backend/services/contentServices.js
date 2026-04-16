@@ -189,4 +189,68 @@ export class ContentService {
       })
       .sort((a, b) => a.nextReviewDate.localeCompare(b.nextReviewDate));
   }
+
+  async updateReviewDates(id, newNextReviews) {
+    // validacao de negocio
+    if (!ObjectId.isValid(id)) {
+      throw new Error("ID inválido");
+    }
+
+    const content = await this.contentRepository.findById(id);
+    if (content === null) {
+      throw new Error("Conteúdo não encontrado");
+    }
+
+    // validar que newNextReviews é um array de strings de datas válidas
+    if (!Array.isArray(newNextReviews)) {
+      throw new Error("Próximas revisões deve ser um array de datas");
+    }
+
+    for (const date of newNextReviews) {
+      if (typeof date !== "string") {
+        throw new Error("Todas as datas devem ser strings");
+      }
+      // validar formato ISO (YYYY-MM-DD)
+      if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        throw new Error("Datas devem estar no formato YYYY-MM-DD");
+      }
+      // validar se é uma data válida
+      if (Number.isNaN(Date.parse(date))) {
+        throw new Error(`Data inválida: ${date}`);
+      }
+    }
+
+    // ordenar as datas
+    const sortedDates = newNextReviews.slice().sort();
+
+    // atualizar o conteúdo
+    await this.contentRepository.update(id, {
+      nextReviews: sortedDates,
+    });
+
+    return {
+      ...content,
+      nextReviews: sortedDates,
+    };
+  }
+
+  async validateReviewDates(id) {
+    // validacao de negocio
+    if (!ObjectId.isValid(id)) {
+      throw new Error("ID inválido");
+    }
+
+    const content = await this.contentRepository.findById(id);
+    if (content === null) {
+      throw new Error("Conteúdo não encontrado");
+    }
+
+    return {
+      id: content._id,
+      name: content.name,
+      subject: content.subject,
+      currentNextReviews: content.nextReviews || [],
+      stability: content.stability,
+    };
+  }
 }

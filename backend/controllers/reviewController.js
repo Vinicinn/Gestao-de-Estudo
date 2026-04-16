@@ -89,4 +89,65 @@ export class ReviewController {
       });
     }
   }
+
+  async completeReview(req, res) {
+    try {
+      const { userId, contentId, reviewDate } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ message: "ID do usuário é obrigatório" });
+      }
+      if (!contentId) {
+        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
+      }
+      if (!reviewDate) {
+        return res.status(400).json({ message: "Data da revisão é obrigatória" });
+      }
+
+      const result = await this.reviewService.completeReview(userId, contentId, reviewDate);
+      res.status(201).json(result);
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao registrar revisão completa",
+        error: error.message,
+      });
+    }
+  }
+
+  async getReviewHistory(req, res) {
+    try {
+      const { contentId } = req.params;
+
+      if (!contentId) {
+        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
+      }
+
+      const history = await this.reviewService.getReviewHistory(contentId);
+      res.json(history);
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao buscar histórico de revisões",
+        error: error.message,
+      });
+    }
+  }
+
+  async getUserReviewHistory(req, res) {
+    try {
+      const { userId } = req.params;
+      const { contentId } = req.query;
+
+      if (!userId) {
+        return res.status(400).json({ message: "ID do usuário é obrigatório" });
+      }
+
+      const history = await this.reviewService.getUserReviewHistory(userId, contentId);
+      res.json(history);
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao buscar histórico de revisões do usuário",
+        error: error.message,
+      });
+    }
+  }
 }
