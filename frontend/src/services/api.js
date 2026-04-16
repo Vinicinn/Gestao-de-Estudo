@@ -93,4 +93,20 @@ export const api = {
     }
     return data;
   },
+
+  async updateContentReviewDates(contentId, nextReviews) {
+    const response = await fetch(`${URL}/contents/${contentId}/review-dates`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nextReviews }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    return data;
+  },
 };

@@ -7,6 +7,9 @@ export function Home({ user }) {
   const [contents, setContents] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [editingRecommendationId, setEditingRecommendationId] = useState(null);
+  const [adjustDateValue, setAdjustDateValue] = useState("");
+  const [savingAdjustment, setSavingAdjustment] = useState(false);
   const navigate = useNavigate();
 
   const today = new Date().toLocaleDateString("pt-BR", {
@@ -32,7 +35,74 @@ export function Home({ user }) {
     loadData();
   }, [user.id]);
 
-  const difficultyLabel = { facil: "Fácil", medio: "Médio", dificil: "Difícil" };
+  function formatDate(date) {
+    return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
+  }
+
+  function handleStartAdjust(content) {
+    setEditingRecommendationId(content._id);
+    setAdjustDateValue(content.nextReviewDate || "");
+  }
+
+  function handleCancelAdjust() {
+    setEditingRecommendationId(null);
+    setAdjustDateValue("");
+  }
+
+  async function handleSaveAdjust(content) {
+    if (!adjustDateValue) {
+      return;
+    }
+
+    try {
+      setSavingAdjustment(true);
+
+      const baseDates = Array.isArray(content.nextReviews)
+        ? [...content.nextReviews]
+        : [];
+
+      if (baseDates.length === 0) {
+        baseDates.push(adjustDateValue);
+      } else {
+        const currentIndex = baseDates.indexOf(content.nextReviewDate);
+        if (currentIndex >= 0) {
+          baseDates[currentIndex] = adjustDateValue;
+        } else {
+          baseDates[0] = adjustDateValue;
+        }
+      }
+
+      const uniqueSortedDates = [...new Set(baseDates)].sort();
+
+      await api.updateContentReviewDates(content._id, uniqueSortedDates);
+
+      setRecommendations((prev) =>
+        prev
+          .map((item) => {
+            if (item._id !== content._id) {
+              return item;
+            }
+
+            const updatedDate =
+              uniqueSortedDates.find((d) => d >= new Date().toISOString().split("T")[0]) ??
+              uniqueSortedDates[uniqueSortedDates.length - 1];
+
+            return {
+              ...item,
+              nextReviews: uniqueSortedDates,
+              nextReviewDate: updatedDate,
+            };
+          })
+          .sort((a, b) => a.nextReviewDate.localeCompare(b.nextReviewDate)),
+      );
+
+      handleCancelAdjust();
+    } catch (error) {
+      alert(error.message || "Não foi possível ajustar a revisão.");
+    } finally {
+      setSavingAdjustment(false);
+    }
+  }
 
   return (
     <div className="home-page">
@@ -69,10 +139,44 @@ export function Home({ user }) {
           ) : (
             recommendations.map((content) => (
               <div className="home-item" key={content._id}>
-                <p className="home-item-title">{content.name}</p>
+                <div className="home-item-top-row">
+                  <p className="home-item-title">{content.name}</p>
+                  <button
+                    className="home-adjust-button"
+                    onClick={() => handleStartAdjust(content)}
+                    disabled={savingAdjustment}
+                  >
+                    Ajustar
+                  </button>
+                </div>
                 <p className="home-item-sub">
-                  {content.subject} · Revisão: {new Date(content.nextReviewDate + "T00:00:00").toLocaleDateString("pt-BR")}
+                  {content.subject} · Revisão: {formatDate(content.nextReviewDate)}
                 </p>
+                {editingRecommendationId === content._id && (
+                  <div className="home-adjust-row">
+                    <input
+                      type="date"
+                      className="home-date-input"
+                      value={adjustDateValue}
+                      onChange={(e) => setAdjustDateValue(e.target.value)}
+                      min={new Date().toISOString().split("T")[0]}
+                    />
+                    <button
+                      className="home-adjust-save"
+                      onClick={() => handleSaveAdjust(content)}
+                      disabled={savingAdjustment || !adjustDateValue}
+                    >
+                      Salvar
+                    </button>
+                    <button
+                      className="home-adjust-cancel"
+                      onClick={handleCancelAdjust}
+                      disabled={savingAdjustment}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                )}
               </div>
             ))
           )}
