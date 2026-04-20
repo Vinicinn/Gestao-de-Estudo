@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { api } from "../services/api";
+import { useState } from "react";
 import "../styles/register.css";
 
 export function Register() {
@@ -14,10 +14,12 @@ export function Register() {
 
   const navigate = useNavigate();
 
+  // sempre que os campos sofrem alteração o valor é armazenado
   function handleChange(event) {
     setForm({ ...form, [event.target.name]: event.target.value });
   }
 
+  // valida os dados dos campos e envia o formulario
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
@@ -34,7 +36,6 @@ export function Register() {
 
     setLoading(true);
     try {
-      console.log(form);
       const response = await api.register(form.name, form.password);
 
       if (response) {

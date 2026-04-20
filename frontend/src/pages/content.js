@@ -36,7 +36,7 @@ export function Content({ user }) {
         navigate("/");
       }
     } catch (error) {
-      setError(error.message);
+      setError(error.message + error.error);
     } finally {
       setLoading(false);
     }
@@ -87,7 +87,9 @@ export function Content({ user }) {
             {loading ? "Registrando..." : "Registrar"}
           </button>
         </form>
-        <Link className="content-return-link" to="/">Voltar ao dashboard</Link>
+        <Link className="content-return-link" to="/">
+          Voltar ao dashboard
+        </Link>
       </div>
     </div>
   );
