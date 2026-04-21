@@ -30,7 +30,7 @@ const reviewController = new ReviewController(reviewService);
 
 // instanciando camadas de conteudos
 const contentRepository = new ContentRepository(db);
-const contentService = new ContentService(contentRepository);
+const contentService = new ContentService(contentRepository, getResponse);
 const contentController = new ContentController(contentService);
 
 // instanciando camadas de usuario

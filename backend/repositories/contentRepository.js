@@ -28,6 +28,13 @@ export class ContentRepository {
     );
   }
 
+  async updateNextReview(id, nextReview) {
+    await this.collection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { nextReview: nextReview } },
+    );
+  }
+
   async delete(id) {
     await this.collection.deleteOne({ _id: new ObjectId(id) });
   }

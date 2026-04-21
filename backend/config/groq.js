@@ -9,6 +9,10 @@ export async function getResponse(prompt) {
   const chatCompletion = await groq.chat.completions.create({
     messages: [
       {
+        role: "system",
+        content: "Responda apenas em JSON válido",
+      },
+      {
         role: "user",
         content: prompt,
       },

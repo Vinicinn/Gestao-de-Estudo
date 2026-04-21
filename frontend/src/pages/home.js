@@ -60,8 +60,8 @@ export function Home({ user }) {
       const baseTitle = `${content.name} - ${content.subject}`;
       const dates = Array.isArray(content.nextReviews) && content.nextReviews.length > 0
         ? content.nextReviews
-        : content.nextReviewDate
-        ? [content.nextReviewDate]
+        : content.nextReview
+        ? [content.nextReview]
         : [];
 
       return dates.map((date) => ({
@@ -99,7 +99,7 @@ export function Home({ user }) {
 
   function handleStartAdjust(content) {
     setEditingRecommendationId(content._id);
-    setAdjustDateValue(content.nextReviewDate || "");
+    setAdjustDateValue(content.nextReview || "");
   }
 
   function handleCancelAdjust() {
@@ -122,7 +122,7 @@ export function Home({ user }) {
       if (baseDates.length === 0) {
         baseDates.push(adjustDateValue);
       } else {
-        const currentIndex = baseDates.indexOf(content.nextReviewDate);
+        const currentIndex = baseDates.indexOf(content.nextReview);
         if (currentIndex >= 0) {
           baseDates[currentIndex] = adjustDateValue;
         } else {
@@ -148,10 +148,10 @@ export function Home({ user }) {
             return {
               ...item,
               nextReviews: uniqueSortedDates,
-              nextReviewDate: updatedDate,
+              nextReview: updatedDate,
             };
           })
-          .sort((a, b) => a.nextReviewDate.localeCompare(b.nextReviewDate)),
+          .sort((a, b) => a.nextReview.localeCompare(b.nextReview)),
       );
 
       handleCancelAdjust();
@@ -208,7 +208,7 @@ export function Home({ user }) {
                   </button>
                 </div>
                 <p className="home-item-sub">
-                  {content.subject} · Revisão: {formatDate(content.nextReviewDate)}
+                  {content.subject} · Revisão: {formatDate(content.nextReview)}
                 </p>
                 {editingRecommendationId === content._id && (
                   <div className="home-adjust-row">
