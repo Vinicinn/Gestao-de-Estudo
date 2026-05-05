@@ -83,7 +83,14 @@ export function Register() {
 
           {error && <p className="register-error">{error}</p>}
           <button className="register-button" type="submit" disabled={loading}>
-            Entrar
+            Cadastrar
+          </button>
+          <button
+            className="register-cancel-button"
+            type="button"
+            onClick={() => navigate("/login")}
+          >
+            Cancelar
           </button>
         </form>
       </div>

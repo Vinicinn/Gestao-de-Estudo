@@ -57,3 +57,14 @@
   color: white;
   font-weight: bold;
 }
+.register-cancel-button {
+  height: 25px;
+  color: #9b9b79;
+  background-color: white;
+  border-radius: 5px;
+  border: 1px solid #9b9b79;
+}
+
+button {
+  cursor: pointer;
+}
