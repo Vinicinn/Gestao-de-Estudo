@@ -19,16 +19,14 @@ export class ReviewRepository {
   }
 
   async findSchedulesByUserId(userId) {
-    return await this.collection
-      .find({ userId, type: "schedule" })
-      .toArray();
+    return await this.collection.find({ userId, type: "schedule" }).toArray();
   }
 
   async findCompletedReviews(contentId) {
     return await this.collection
-      .find({ 
-        contentId, 
-        type: "completed_review" 
+      .find({
+        contentId,
+        type: "completed_review",
       })
       .toArray();
   }
@@ -39,10 +37,10 @@ export class ReviewRepository {
 
   async findUserCompletedReviewsByDate(userId, date) {
     return await this.collection
-      .find({ 
-        userId, 
+      .find({
+        userId,
         reviewDate: date,
-        type: "completed_review" 
+        type: "completed_review",
       })
       .toArray();
   }
@@ -51,13 +49,18 @@ export class ReviewRepository {
     return await this.collection
       .aggregate([
         { $match: { userId, type: "completed_review" } },
-        { $group: { 
-            _id: "$contentId", 
+        {
+          $group: {
+            _id: "$contentId",
             count: { $sum: 1 },
-            lastReview: { $max: "$reviewDate" }
-          }
-        }
+            lastReview: { $max: "$reviewDate" },
+          },
+        },
       ])
       .toArray();
+  }
+
+  async deleteAll() {
+    await this.collection.deleteMany({});
   }
 }

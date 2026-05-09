@@ -1,4 +1,3 @@
-
 // Controller para endpoints de revisões
 export class ReviewController {
   constructor(reviewService) {
@@ -8,7 +7,6 @@ export class ReviewController {
   async getAllReviews(req, res) {
     res.json(await this.reviewService.getAllReviews());
   }
-
 
   async getReviewsByDate(req, res) {
     // validacao de entrada
@@ -41,7 +39,9 @@ export class ReviewController {
         return res.status(400).json({ message: "Assunto é obrigatório" });
       }
       if (!date) {
-        return res.status(400).json({ message: "Data do agendamento é obrigatória" });
+        return res
+          .status(400)
+          .json({ message: "Data do agendamento é obrigatória" });
       }
       if (!time) {
         return res.status(400).json({ message: "Horário é obrigatório" });
@@ -98,13 +98,21 @@ export class ReviewController {
         return res.status(400).json({ message: "ID do usuário é obrigatório" });
       }
       if (!contentId) {
-        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
+        return res
+          .status(400)
+          .json({ message: "ID do conteúdo é obrigatório" });
       }
       if (!reviewDate) {
-        return res.status(400).json({ message: "Data da revisão é obrigatória" });
+        return res
+          .status(400)
+          .json({ message: "Data da revisão é obrigatória" });
       }
 
-      const result = await this.reviewService.completeReview(userId, contentId, reviewDate);
+      const result = await this.reviewService.completeReview(
+        userId,
+        contentId,
+        reviewDate,
+      );
       res.status(201).json(result);
     } catch (error) {
       res.status(500).json({
@@ -119,7 +127,9 @@ export class ReviewController {
       const { contentId } = req.params;
 
       if (!contentId) {
-        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
+        return res
+          .status(400)
+          .json({ message: "ID do conteúdo é obrigatório" });
       }
 
       const history = await this.reviewService.getReviewHistory(contentId);
@@ -141,11 +151,26 @@ export class ReviewController {
         return res.status(400).json({ message: "ID do usuário é obrigatório" });
       }
 
-      const history = await this.reviewService.getUserReviewHistory(userId, contentId);
+      const history = await this.reviewService.getUserReviewHistory(
+        userId,
+        contentId,
+      );
       res.json(history);
     } catch (error) {
       res.status(500).json({
         message: "Erro ao buscar histórico de revisões do usuário",
+        error: error.message,
+      });
+    }
+  }
+
+  async deleteAllReviews(req, res) {
+    try {
+      await this.reviewService.deleteAllReviews();
+      res.status(200).json({ message: "Revisões removidas com sucesso!" });
+    } catch (error) {
+      res.status(500).json({
+        message: "Falha ao remover todos as revisões",
         error: error.message,
       });
     }

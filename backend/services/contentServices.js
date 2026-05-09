@@ -80,7 +80,6 @@ export class ContentService {
       if (result.insertedId) {
         await this.contentRepository.delete(result.insertedId.toString());
         console.log(error);
-        
       }
       throw error;
     }
@@ -123,6 +122,10 @@ export class ContentService {
     }
 
     await this.contentRepository.delete(id);
+  }
+
+  async deleteAllContents() {
+    await this.contentRepository.deleteAll();
   }
 
   calculateNextReviews(startDate, interval) {

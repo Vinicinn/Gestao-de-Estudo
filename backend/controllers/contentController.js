@@ -122,6 +122,18 @@ export class ContentController {
     }
   }
 
+  async deleteAllContents(req, res) {
+    try {
+      await this.contentService.deleteAllContents();
+      res.status(200).json({ message: "Conteudos removidos com sucesso!" });
+    } catch (error) {
+      res.status(500).json({
+        message: "Falha ao remover todos os usuarios",
+        error: error.message,
+      });
+    }
+  }
+
   async getUserRecommendations(req, res) {
     try {
       const { id } = req.params;
@@ -149,7 +161,10 @@ export class ContentController {
         return res.status(400).json({ message: "Qualidade é obrigatória" });
       }
 
-      const updatedContent = await this.contentService.submitFeedback(id, quality);
+      const updatedContent = await this.contentService.submitFeedback(
+        id,
+        quality,
+      );
       res.json(updatedContent);
     } catch (error) {
       res.status(500).json({
@@ -165,13 +180,20 @@ export class ContentController {
       const { nextReviews } = req.body;
 
       if (!id) {
-        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
+        return res
+          .status(400)
+          .json({ message: "ID do conteúdo é obrigatório" });
       }
       if (!nextReviews) {
-        return res.status(400).json({ message: "Próximas revisões são obrigatórias" });
+        return res
+          .status(400)
+          .json({ message: "Próximas revisões são obrigatórias" });
       }
 
-      const updatedContent = await this.contentService.updateReviewDates(id, nextReviews);
+      const updatedContent = await this.contentService.updateReviewDates(
+        id,
+        nextReviews,
+      );
       res.json({
         message: "Datas de revisão atualizadas com sucesso",
         content: updatedContent,
@@ -189,7 +211,9 @@ export class ContentController {
       const { id } = req.params;
 
       if (!id) {
-        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
+        return res
+          .status(400)
+          .json({ message: "ID do conteúdo é obrigatório" });
       }
 
       const info = await this.contentService.validateReviewDates(id);
@@ -202,4 +226,3 @@ export class ContentController {
     }
   }
 }
-

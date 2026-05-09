@@ -28,6 +28,10 @@ export class UserRepository {
     await this.collection.deleteOne({ _id: new ObjectId(id) });
   }
 
+  async deleteAll() {
+    await this.collection.deleteMany({});
+  }
+
   async getUserByName(name) {
     return await this.collection.findOne({ name });
   }

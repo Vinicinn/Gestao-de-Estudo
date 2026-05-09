@@ -78,6 +78,18 @@ export class UserController {
     }
   }
 
+  async deleteAllUsers(req, res) {
+    try {
+      await this.userService.deleteAllUsers();
+      res.status(200).json({ message: "Usuarios removidos com sucesso!" });
+    } catch (error) {
+      res.status(500).json({
+        message: "Falha ao remover todos os usuarios",
+        error: error.message,
+      });
+    }
+  }
+
   async loginVerify(req, res) {
     try {
       const { name, password } = req.body;

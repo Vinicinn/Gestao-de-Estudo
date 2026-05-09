@@ -104,7 +104,7 @@ export class ReviewService {
     }
 
     const allReviews = await this.reviewRepository.findByDate(date);
-    return allReviews.filter(review => review.type === "schedule");
+    return allReviews.filter((review) => review.type === "schedule");
   }
 
   async completeReview(userId, contentId, reviewDate) {
@@ -152,12 +152,16 @@ export class ReviewService {
       throw new Error("ID do conteúdo inválido");
     }
 
-    const history = await this.reviewRepository.findCompletedReviews(new ObjectId(contentId));
+    const history = await this.reviewRepository.findCompletedReviews(
+      new ObjectId(contentId),
+    );
 
     return {
       contentId,
       totalCompleted: history.length,
-      reviews: history.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate)),
+      reviews: history.sort(
+        (a, b) => new Date(a.reviewDate) - new Date(b.reviewDate),
+      ),
     };
   }
 
@@ -189,7 +193,13 @@ export class ReviewService {
       userId,
       contentId: contentId || null,
       totalReviews: history.length,
-      reviews: history.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate)),
+      reviews: history.sort(
+        (a, b) => new Date(a.reviewDate) - new Date(b.reviewDate),
+      ),
     };
+  }
+
+  async deleteAllReviews() {
+    await this.reviewRepository.deleteAll();
   }
 }
