@@ -95,7 +95,9 @@ export const api = {
   },
 
   async getUserRecommendations(userId) {
-    const response = await fetch(`${URL}/contents/user/${userId}/recommendations`);
+    const response = await fetch(
+      `${URL}/contents/user/${userId}/recommendations`,
+    );
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data.message);
@@ -116,6 +118,16 @@ export const api = {
       throw new Error(data.message);
     }
 
+    return data;
+  },
+
+  async deleteContentById(contentId) {
+    const response = await fetch(`${URL}/contents/${contentId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await response.json();
     return data;
   },
 };

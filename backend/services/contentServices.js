@@ -116,12 +116,19 @@ export class ContentService {
     if (!ObjectId.isValid(id)) {
       throw new Error("ID inválido");
     }
+    // busca pelo conteudo para garantir que exista antes de tentar remover
     const content = await this.contentRepository.findById(id);
     if (content === null) {
       throw new Error("Conteúdo não encontrado");
     }
-
-    await this.contentRepository.delete(id);
+    // verificacao se a exclusão ocorreu com sucesso
+    const result = await this.contentRepository.delete(id);
+    if (result.acknowledged != true) {
+      return {
+        message: "Falha ao remover o conteudo",
+      };
+    }
+    return { message: "Conteudo removido com sucesso" };
   }
 
   async deleteAllContents() {

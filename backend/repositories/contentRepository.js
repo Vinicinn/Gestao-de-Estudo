@@ -36,7 +36,7 @@ export class ContentRepository {
   }
 
   async delete(id) {
-    await this.collection.deleteOne({ _id: new ObjectId(id) });
+    return await this.collection.deleteOne({ _id: new ObjectId(id) });
   }
 
   async deleteAll() {

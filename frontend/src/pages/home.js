@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "../styles/home.css";
 import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
@@ -20,23 +20,26 @@ export function Home({ user }) {
     year: "numeric",
   });
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [contentData, scheduleData, historyData, recData] = await Promise.all([
+  const loadData = useCallback(async () => {
+    try {
+      const [contentData, scheduleData, historyData, recData] =
+        await Promise.all([
           api.getUserContents(user.id),
           api.getUserSchedules(user.id),
           api.getUserReviewHistory(user.id),
           api.getUserRecommendations(user.id),
         ]);
-        setContents(contentData);
-        setSchedules(scheduleData);
-        setReviewHistory(historyData.reviews || []);
-        setRecommendations(recData);
-      } catch (error) {}
-    }
-    loadData();
+
+      setContents(contentData);
+      setSchedules(scheduleData);
+      setReviewHistory(historyData.reviews || []);
+      setRecommendations(recData);
+    } catch (error) {}
   }, [user.id]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   function formatDate(date) {
     return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
@@ -44,7 +47,10 @@ export function Home({ user }) {
 
   const allReviewHistory = useMemo(() => {
     const contentNameById = new Map(
-      contents.map((content) => [content._id, `${content.name} - ${content.subject}`]),
+      contents.map((content) => [
+        content._id,
+        `${content.name} - ${content.subject}`,
+      ]),
     );
 
     const systemReviewsFromContents = contents.flatMap((content) =>
@@ -56,24 +62,29 @@ export function Home({ user }) {
       })),
     );
 
-    const systemReviewsFromRecommendations = recommendations.flatMap((content) => {
-      const baseTitle = `${content.name} - ${content.subject}`;
-      const dates = Array.isArray(content.nextReviews) && content.nextReviews.length > 0
-        ? content.nextReviews
-        : content.nextReview
-        ? [content.nextReview]
-        : [];
+    const systemReviewsFromRecommendations = recommendations.flatMap(
+      (content) => {
+        const baseTitle = `${content.name} - ${content.subject}`;
+        const dates =
+          Array.isArray(content.nextReviews) && content.nextReviews.length > 0
+            ? content.nextReviews
+            : content.nextReview
+              ? [content.nextReview]
+              : [];
 
-      return dates.map((date) => ({
-        id: `system-${content._id}-${date}`,
-        title: baseTitle,
-        source: "Sistema",
-        date,
-      }));
-    });
+        return dates.map((date) => ({
+          id: `system-${content._id}-${date}`,
+          title: baseTitle,
+          source: "Sistema",
+          date,
+        }));
+      },
+    );
 
     const systemReviewById = new Map(
-      [...systemReviewsFromContents, ...systemReviewsFromRecommendations].map((review) => [review.id, review]),
+      [...systemReviewsFromContents, ...systemReviewsFromRecommendations].map(
+        (review) => [review.id, review],
+      ),
     );
     const systemReviews = [...systemReviewById.values()];
 
@@ -142,8 +153,9 @@ export function Home({ user }) {
             }
 
             const updatedDate =
-              uniqueSortedDates.find((d) => d >= new Date().toISOString().split("T")[0]) ??
-              uniqueSortedDates[uniqueSortedDates.length - 1];
+              uniqueSortedDates.find(
+                (d) => d >= new Date().toISOString().split("T")[0],
+              ) ?? uniqueSortedDates[uniqueSortedDates.length - 1];
 
             return {
               ...item,
@@ -159,6 +171,19 @@ export function Home({ user }) {
       alert(error.message || "Não foi possível ajustar a revisão.");
     } finally {
       setSavingAdjustment(false);
+    }
+  }
+
+  async function handleDeleteContent(contentId) {
+    if (!window.confirm("Tem certeza que deseja excluir este conteúdo?")) {
+      return;
+    }
+
+    try {
+      await api.deleteContentById(contentId);
+      loadData();
+    } catch (error) {
+      alert(error.message || "Erro ao excluir conteúdo");
     }
   }
 
@@ -184,8 +209,18 @@ export function Home({ user }) {
           ) : (
             contents.map((content) => (
               <div className="home-item" key={content._id}>
-                <p className="home-item-title">{content.name}</p>
-                <p className="home-item-sub">{content.subject}</p>
+                <div className="home-item-text">
+                  <p className="home-item-title">{content.name}</p>
+                  <p className="home-item-sub">{content.subject}</p>
+                </div>
+                <div>
+                  <button
+                    className="home-item-button"
+                    onClick={() => handleDeleteContent(content._id)}
+                  >
+                    x
+                  </button>
+                </div>
               </div>
             ))
           )}
@@ -243,15 +278,25 @@ export function Home({ user }) {
           <div className="home-card home-card-half">
             <div className="card-header">
               <p className="home-card-title">Agendamentos</p>
-              <button className="card-header-button" onClick={() => navigate("/schedule")}>+</button>
+              <button
+                className="card-header-button"
+                onClick={() => navigate("/schedule")}
+              >
+                +
+              </button>
             </div>
             {schedules.length === 0 ? (
               <p className="home-empty">Nenhum agendamento cadastrado.</p>
             ) : (
               schedules.map((schedule) => (
                 <div className="home-item" key={schedule._id}>
-                  <p className="home-item-title">{schedule.subject} - {schedule.topic}</p>
-                  <p className="home-item-sub">{formatDate(schedule.reviewDate)} às {schedule.time} · {schedule.duration} min</p>
+                  <p className="home-item-title">
+                    {schedule.subject} - {schedule.topic}
+                  </p>
+                  <p className="home-item-sub">
+                    {formatDate(schedule.reviewDate)} às {schedule.time} ·{" "}
+                    {schedule.duration} min
+                  </p>
                 </div>
               ))
             )}

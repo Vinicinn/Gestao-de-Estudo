@@ -57,6 +57,10 @@
 .card-header-button {
   width: 30px;
   height: 30px;
+  border-radius: 5px;
+  background-color: #9b9b79;
+  color: white;
+  border: 1px solid black;
 }
 .home-card-title {
   font-weight: bold;
@@ -67,8 +71,14 @@
 }
 .home-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   width: 80%;
+}
+.home-item-text {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 .home-item-top-row {
   display: flex;
@@ -99,6 +109,12 @@
   color: #888;
   margin-top: 2px;
   margin-bottom: 5px;
+}
+.home-item-button {
+  align-self: flex-end;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
 }
 .home-adjust-row {
   display: flex;
