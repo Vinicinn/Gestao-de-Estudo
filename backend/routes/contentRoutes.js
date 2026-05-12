@@ -6,8 +6,7 @@ export function contentRoutes(contentController) {
   router.get("/", (req, res) => contentController.getAllContents(req, res));                                  // eniva todos os conteudos (ok)
   router.get("/user/:id", (req, res) => contentController.getAllUserContents(req, res));                      // envia todos os conteudos de um usuario (ok)
   router.get("/:id", (req, res) => contentController.getContentById(req, res));                               // envia o conteudo com o id (ok)
-  router.get("/user/:id/recommendations", (req, res) => contentController.getUserRecommendations(req, res));  // envia as recomendacoes de conteudo de um usuario 
-  router.get("/:id/review-info", (req, res) => contentController.getReviewDatesInfo(req, res));
+  router.get("/user/:id/recommendations", (req, res) => contentController.getUserRecommendations(req, res));  // envia as recomendacoes de conteudo de um usuario
   
   router.post("/", (req, res) => contentController.createContent(req, res));                                  // cria um novo conteudo (ok)
   

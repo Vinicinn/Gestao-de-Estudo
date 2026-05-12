@@ -181,23 +181,5 @@ export class ContentController {
     }
   }
 
-  async getReviewDatesInfo(req, res) {
-    try {
-      const { id } = req.params;
 
-      if (!id) {
-        return res
-          .status(400)
-          .json({ message: "ID do conteúdo é obrigatório" });
-      }
-
-      const info = await this.contentService.validateReviewDates(id);
-      res.json(info);
-    } catch (error) {
-      res.status(500).json({
-        message: "Erro ao buscar informações de revisão",
-        error: error.message,
-      });
-    }
-  }
 }

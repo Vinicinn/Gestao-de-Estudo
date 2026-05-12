@@ -189,26 +189,6 @@ export class ContentService {
     };
   }
 
-  async validateReviewDates(id) {
-    // validacao de negocio
-    if (!ObjectId.isValid(id)) {
-      throw new Error("ID inválido");
-    }
-
-    const content = await this.contentRepository.findById(id);
-    if (content === null) {
-      throw new Error("Conteúdo não encontrado");
-    }
-
-    return {
-      id: content._id,
-      name: content.name,
-      subject: content.subject,
-      currentNextReviews: content.nextReviews || [],
-      stability: content.stability,
-    };
-  }
-
   async setAllContentReviews(userId) {
     const contents = await this.getAllUserContents(userId);
     if (!contents || contents.length === 0) {
