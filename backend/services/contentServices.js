@@ -141,7 +141,6 @@ export class ContentService {
     }
 
     const contents = await this.contentRepository.findByUserId(userId);
-    const today = new Date().toISOString().split("T")[0];
 
     return contents.sort((a, b) => a.nextReview.localeCompare(b.nextReview));
   }

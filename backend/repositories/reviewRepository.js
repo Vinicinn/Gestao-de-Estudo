@@ -45,21 +45,6 @@ export class ReviewRepository {
       .toArray();
   }
 
-  async getReviewStats(userId) {
-    return await this.collection
-      .aggregate([
-        { $match: { userId, type: "completed_review" } },
-        {
-          $group: {
-            _id: "$contentId",
-            count: { $sum: 1 },
-            lastReview: { $max: "$reviewDate" },
-          },
-        },
-      ])
-      .toArray();
-  }
-
   async deleteAll() {
     await this.collection.deleteMany({});
   }
