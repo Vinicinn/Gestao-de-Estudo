@@ -10,7 +10,6 @@ export function contentRoutes(contentController) {
   router.get("/:id/review-info", (req, res) => contentController.getReviewDatesInfo(req, res));
   
   router.post("/", (req, res) => contentController.createContent(req, res));                                  // cria um novo conteudo (ok)
-  router.post("/:id/feedback", (req, res) => contentController.submitContentFeedback(req, res));              // atualiza as metricas de um conteudo
   
   router.put("/:id", (req, res) => contentController.updateContent(req, res));                                // atualiza conteudo pelo id (ok)
   router.put("/:id/review-dates", (req, res) => contentController.updateReviewDates(req, res));
