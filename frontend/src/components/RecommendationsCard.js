@@ -13,7 +13,9 @@ export function RecommendationsCard({ userRecommendations, formatDate }) {
                 {content.subject} · Revisão: {formatDate(content.nextReview)}
               </p>
             </div>
-            <button className="home-adjust-button">Concluir</button>
+            <div>
+              <button className="home-item-button">Concluir</button>
+            </div>
           </div>
         ))
       )}

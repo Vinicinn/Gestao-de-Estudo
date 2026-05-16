@@ -60,11 +60,11 @@ export const api = {
     return data;
   },
 
-  async createSchedule({ userId, subject, topic, date, time, duration }) {
+  async createSchedule({ userId, subject, topic, date, time }) {
     const response = await fetch(`${URL}/reviews/schedule`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, subject, topic, date, time, duration }),
+      body: JSON.stringify({ userId, subject, topic, date, time }),
     });
 
     const data = await response.json();
@@ -95,9 +95,7 @@ export const api = {
   },
 
   async getUserRecommendations(userId) {
-    const response = await fetch(
-      `${URL}/contents/user/${userId}/recommendations`,
-    );
+    const response = await fetch(`${URL}/contents/user/${userId}/recommendations`);
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data.message);
@@ -123,6 +121,16 @@ export const api = {
 
   async deleteContentById(contentId) {
     const response = await fetch(`${URL}/contents/${contentId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await response.json();
+    return data;
+  },
+
+  async deleteScheduleById(scheduleId) {
+    const response = await fetch(`${URL}/reviews/schedule/${scheduleId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });

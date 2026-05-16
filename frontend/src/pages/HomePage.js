@@ -53,7 +53,12 @@ export function HomePage({ user }) {
         <ContentsCard deleteContent={api.deleteContentById} userContents={contents} reload={loadData} />
         <RecommendationsCard userRecommendations={recommendations} formatDate={formatDate} />
         <div className="home-stack-column">
-          <SchedulesCard userSchedules={schedules} formatDate={formatDate} />
+          <SchedulesCard
+            deleteSchedule={api.deleteScheduleById}
+            userSchedules={schedules}
+            reload={loadData}
+            formatDate={formatDate}
+          />
           <HistoryCard userHistory={reviewHistory} formatDate={formatDate} />
         </div>
       </div>
