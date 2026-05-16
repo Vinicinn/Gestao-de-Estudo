@@ -13,6 +13,7 @@ export function reviewRoutes(reviewController) {
   router.post("/schedule", (req, res) => reviewController.createReviewSchedule(req, res));
 
   router.delete("/all", (req, res) => reviewController.deleteAllReviews(req,res));
+  router.delete("/schedule/:id", (req, res) => reviewController.deleteReviewSchedule(req, res));
   
   return router;
 }

@@ -122,16 +122,12 @@ export class ReviewService {
       throw new Error("ID do conteúdo inválido");
     }
 
-    const history = await this.reviewRepository.findCompletedReviews(
-      new ObjectId(contentId),
-    );
+    const history = await this.reviewRepository.findCompletedReviews(new ObjectId(contentId));
 
     return {
       contentId,
       totalCompleted: history.length,
-      reviews: history.sort(
-        (a, b) => new Date(a.reviewDate) - new Date(b.reviewDate),
-      ),
+      reviews: history.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate)),
     };
   }
 
@@ -163,13 +159,25 @@ export class ReviewService {
       userId,
       contentId: contentId || null,
       totalReviews: history.length,
-      reviews: history.sort(
-        (a, b) => new Date(a.reviewDate) - new Date(b.reviewDate),
-      ),
+      reviews: history.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate)),
     };
   }
 
   async deleteAllReviews() {
     await this.reviewRepository.deleteAll();
+  }
+
+  async deleteReviewSchedule(scheduleId) {
+    if (!ObjectId.isValid(scheduleId)) {
+      throw new Error("ID inválido");
+    }
+
+    const result = await this.reviewRepository.deleteSchedule(scheduleId);
+    if (result.acknowledged != true) {
+      return {
+        message: "Falha ao remover o conteudo",
+      };
+    }
+    return { message: "Conteudo removido com sucesso" };
   }
 }

@@ -175,4 +175,20 @@ export class ReviewController {
       });
     }
   }
+
+  async deleteReviewSchedule(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ message: "ID do agendamento é obrigatório" });
+      }
+      await this.reviewService.deleteReviewSchedule(id);
+      res.status(200).json({ message: "Agendamento removido com sucesso!" });
+    } catch (error) {
+      res.status(500).json({
+        message: "Falha ao remover agendamento",
+        error: error.message,
+      });
+    }
+  }
 }

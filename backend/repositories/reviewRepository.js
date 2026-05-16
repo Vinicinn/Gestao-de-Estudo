@@ -48,4 +48,8 @@ export class ReviewRepository {
   async deleteAll() {
     await this.collection.deleteMany({});
   }
+
+  async deleteSchedule(id) {
+    return await this.collection.deleteOne({ _id: new ObjectId(id), type: "schedule" });
+  }
 }
