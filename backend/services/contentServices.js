@@ -219,7 +219,7 @@ export class ContentService {
     `;
 
     const response = await this.getResponse(prompt);
-    const match = response.match(/\{[\s\S]*\}/);
+    const match = response.match(/\[[\s\S]*\]/);
     const data = JSON.parse(match[0]);
     for (let i = 0; i < data.length; i++) {
       const content = data[i];
