@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
-import "../styles/content.css";
+import "../styles/ContentRegister.css";
 import { Link } from "react-router-dom";
 
 export function ContentRegister({ user }) {
