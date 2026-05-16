@@ -20,7 +20,7 @@ export class ReviewService {
     return await this.reviewRepository.findByDate(date);
   }
 
-  async createReviewSchedule({ userId, subject, topic, date, time, duration }) {
+  async createReviewSchedule({ userId, subject, topic, date, time }) {
     // validacao de negocio
     subject = subject?.trim();
     topic = topic?.trim();
@@ -42,9 +42,6 @@ export class ReviewService {
     if (!time) {
       throw new Error("Horário inválido");
     }
-    if (typeof duration !== "number" || duration <= 0) {
-      throw new Error("Duração inválida");
-    }
 
     const review = {
       userId,
@@ -52,7 +49,6 @@ export class ReviewService {
       topic,
       reviewDate: date,
       time,
-      duration,
       type: "schedule",
     };
 

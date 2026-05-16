@@ -9,7 +9,6 @@ export function ScheduleRegister({ user }) {
     topic: "",
     date: "",
     time: "",
-    duration: 0,
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -18,10 +17,7 @@ export function ScheduleRegister({ user }) {
   function handleChange(event) {
     setForm({
       ...form,
-      [event.target.name]:
-        event.target.name === "duration"
-          ? Number(event.target.value)
-          : event.target.value,
+      [event.target.name]: event.target.value,
     });
     setError("");
     setSuccess("");
@@ -32,19 +28,8 @@ export function ScheduleRegister({ user }) {
     setError("");
     setSuccess("");
 
-    if (
-      !form.subject ||
-      !form.topic ||
-      !form.date ||
-      !form.time ||
-      !form.duration
-    ) {
+    if (!form.subject || !form.topic || !form.date || !form.time) {
       setError("Preencha todos os campos");
-      return;
-    }
-
-    if (!Number.isInteger(form.duration)) {
-      setError("A duração só pode ser numero");
       return;
     }
 
@@ -53,7 +38,7 @@ export function ScheduleRegister({ user }) {
     try {
       await api.createSchedule({ userId: user.id, ...form });
       setSuccess("Agendamento criado com sucesso!");
-      setForm({ subject: "", topic: "", date: "", time: "", duration: 0 });
+      setForm({ subject: "", topic: "", date: "", time: "" });
     } catch (error) {
       setError(error.message);
     } finally {
@@ -65,9 +50,7 @@ export function ScheduleRegister({ user }) {
     <div className="schedule-page">
       <div className="schedule-window">
         <p className="schedule-title">Agendar revisão</p>
-        <p className="schedule-subtitle">
-          Registre um horário de estudo planejado
-        </p>
+        <p className="schedule-subtitle">Registre um horário de estudo planejado</p>
 
         <form className="schedule-form" onSubmit={handleSubmit}>
           <label className="schedule-label">Matéria</label>
@@ -91,33 +74,10 @@ export function ScheduleRegister({ user }) {
           />
 
           <label className="schedule-label">Data</label>
-          <input
-            className="schedule-input"
-            type="date"
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-          />
+          <input className="schedule-input" type="date" name="date" value={form.date} onChange={handleChange} />
 
           <label className="schedule-label">Horário</label>
-          <input
-            className="schedule-input"
-            type="time"
-            name="time"
-            value={form.time}
-            onChange={handleChange}
-          />
-
-          <label className="schedule-label">Duração (minutos)</label>
-          <input
-            className="schedule-input"
-            type="number"
-            min="1"
-            name="duration"
-            value={form.duration}
-            placeholder="60"
-            onChange={handleChange}
-          />
+          <input className="schedule-input" type="time" name="time" value={form.time} onChange={handleChange} />
 
           {error && <p className="schedule-error">{error}</p>}
           {success && <p className="schedule-success">{success}</p>}

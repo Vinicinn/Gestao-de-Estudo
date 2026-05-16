@@ -39,22 +39,10 @@ export class ReviewController {
         return res.status(400).json({ message: "Assunto é obrigatório" });
       }
       if (!date) {
-        return res
-          .status(400)
-          .json({ message: "Data do agendamento é obrigatória" });
+        return res.status(400).json({ message: "Data do agendamento é obrigatória" });
       }
       if (!time) {
         return res.status(400).json({ message: "Horário é obrigatório" });
-      }
-      if (duration === undefined) {
-        return res.status(400).json({ message: "Duração é obrigatória" });
-      }
-
-      const parsedDuration = Number(duration);
-      if (Number.isNaN(parsedDuration)) {
-        return res.status(400).json({
-          message: "Duração inválida",
-        });
       }
 
       await this.reviewService.createReviewSchedule({
@@ -63,7 +51,6 @@ export class ReviewController {
         topic,
         date,
         time,
-        duration: parsedDuration,
       });
 
       res.status(201).json({ message: "Agendamento criado como revisão" });
@@ -98,21 +85,13 @@ export class ReviewController {
         return res.status(400).json({ message: "ID do usuário é obrigatório" });
       }
       if (!contentId) {
-        return res
-          .status(400)
-          .json({ message: "ID do conteúdo é obrigatório" });
+        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
       }
       if (!reviewDate) {
-        return res
-          .status(400)
-          .json({ message: "Data da revisão é obrigatória" });
+        return res.status(400).json({ message: "Data da revisão é obrigatória" });
       }
 
-      const result = await this.reviewService.completeReview(
-        userId,
-        contentId,
-        reviewDate,
-      );
+      const result = await this.reviewService.completeReview(userId, contentId, reviewDate);
       res.status(201).json(result);
     } catch (error) {
       res.status(500).json({
@@ -127,9 +106,7 @@ export class ReviewController {
       const { contentId } = req.params;
 
       if (!contentId) {
-        return res
-          .status(400)
-          .json({ message: "ID do conteúdo é obrigatório" });
+        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
       }
 
       const history = await this.reviewService.getReviewHistory(contentId);
@@ -151,10 +128,7 @@ export class ReviewController {
         return res.status(400).json({ message: "ID do usuário é obrigatório" });
       }
 
-      const history = await this.reviewService.getUserReviewHistory(
-        userId,
-        contentId,
-      );
+      const history = await this.reviewService.getUserReviewHistory(userId, contentId);
       res.json(history);
     } catch (error) {
       res.status(500).json({
