@@ -2,11 +2,11 @@ import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import "./styles/App.css";
 
-import { Login } from "./pages/login.js";
-import { Register } from "./pages/register.js";
-import { Home } from "./pages/home.js";
-import { Content } from "./pages/content.js";
-import { Schedule } from "./pages/schedule.js";
+import { LoginPage } from "./pages/LoginPage.js";
+import { UserRegister } from "./pages/UserRegister.js";
+import { HomePage } from "./pages/HomePage.js";
+import { ContentRegister } from "./pages/ContentRegister.js";
+import { ScheduleRegister } from "./pages/ScheduleRegister.js";
 
 function App() {
   const [isLogged, setIsLogged] = useState(false);
@@ -15,36 +15,11 @@ function App() {
   return (
     <HashRouter>
       <Routes>
-        <Route
-          path="/"
-          element={isLogged ? <Home user={user} /> : <Navigate to={"/login"} />}
-        />
-        <Route
-          path="/login"
-          element={
-            isLogged ? (
-              <Navigate to={"/"} />
-            ) : (
-              <Login
-                onLogin={(user) => {
-                  setIsLogged(true);
-                  setUser(user);
-                }}
-              />
-            )
-          }
-        />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/content"
-          element={
-            isLogged ? <Content user={user} /> : <Navigate to={"/login"} />
-          }
-        />
-        <Route
-          path="/schedule"
-          element={isLogged ? <Schedule user={user} /> : <Navigate to={"/login"} />}
-        />
+        <Route path="/" element={isLogged ? <HomePage user={user} /> : <Navigate to={"/login"} />} />
+        <Route path="/login" element={isLogged ? ( <Navigate to={"/"} /> ) : ( <LoginPage onLogin={(user) => { setIsLogged(true); setUser(user); }} />)} />
+        <Route path="/register" element={<UserRegister />} />
+        <Route path="/content" element={isLogged ? <ContentRegister user={user} /> : <Navigate to={"/login"} />} />
+        <Route path="/schedule" element={isLogged ? <ScheduleRegister user={user} /> : <Navigate to={"/login"} />} />
       </Routes>
     </HashRouter>
   );

@@ -43,7 +43,6 @@
 }
 .home-card-half {
   width: 100%;
-  height: calc(50% - 6px);
   min-height: 0;
 }
 .card-header {

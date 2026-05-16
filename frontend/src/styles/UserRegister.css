@@ -20,9 +20,9 @@
   row-gap: 8px;
 }
 .register-title {
-  font-size: 24px;
-  color: #9b9b79;
   font-weight: bold;
+  color: #9b9b79;
+  font-size: 24px;
 }
 .register-subtitle {
   font-size: 16px;
@@ -43,28 +43,25 @@
   color: red;
 }
 .register-input {
-  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  padding: 10px;
 }
 .register-button {
-  align-self: center;
-  width: 100%;
-  padding: 5px;
   background-color: #9b9b79;
-  border: none;
+  align-self: center;
   border-radius: 5px;
-  color: white;
   font-weight: bold;
+  color: white;
+  padding: 5px;
+  border: none;
+  width: 100%;
 }
 .register-cancel-button {
-  height: 25px;
-  color: #9b9b79;
+  border: 1px solid #9b9b79;
   background-color: white;
   border-radius: 5px;
-  border: 1px solid #9b9b79;
-}
-
-button {
-  cursor: pointer;
+  font-weight: bold;
+  color: #9b9b79;
+  height: 25px;
 }

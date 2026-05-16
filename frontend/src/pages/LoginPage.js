@@ -1,13 +1,10 @@
+import "../styles/LoginPage.css";
 import { useState } from "react";
 import { api } from "../services/api.js";
-import "../styles/login.css";
 import { Link } from "react-router-dom";
 
-export function Login({ onLogin }) {
-  const [form, setForm] = useState({
-    name: "",
-    password: "",
-  });
+export function LoginPage({ onLogin }) {
+  const [form, setForm] = useState({ name: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,9 +22,9 @@ export function Login({ onLogin }) {
     }
 
     setLoading(true);
+
     try {
       const response = await api.login(form);
-
       if (response) {
         onLogin({ id: response.id, name: response.name });
       }
@@ -41,17 +38,13 @@ export function Login({ onLogin }) {
   return (
     <div className="login-page">
       <div className="login-window">
-        <p className="login-title">Gestão de Estudos</p>
-        <p className="login-subtitle">Faça login para acessar sua conta</p>
+        <div className="login-header">
+          <p className="login-title">Gestão de Estudos</p>
+          <p className="login-subtitle">Faça login para acessar seus conteúdos</p>
+        </div>
         <form className="login-form" onSubmit={handleSubmit}>
           <label className="login-label">Aluno</label>
-          <input
-            className="login-input"
-            type="text"
-            name="name"
-            placeholder="João"
-            onChange={handleChange}
-          />
+          <input className="login-input" type="text" name="name" placeholder="João" onChange={handleChange} />
           <label className="login-label">Senha</label>
           <input
             className="login-input"
@@ -60,7 +53,6 @@ export function Login({ onLogin }) {
             placeholder="*******"
             onChange={handleChange}
           />
-
           {error && <p className="login-error">{error}</p>}
           <button className="login-button" type="submit" disabled={loading}>
             Entrar
@@ -68,7 +60,10 @@ export function Login({ onLogin }) {
         </form>
         <p className="login-footer">
           Não tem uma conta?
-          <Link className="login-register-link" to="/register"> Cadastre-se</Link>
+          <Link className="login-register-link" to="/register">
+            {" "}
+            Cadastre-se
+          </Link>
         </p>
       </div>
     </div>

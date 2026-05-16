@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/content.css";
 import { Link } from "react-router-dom";
 
-export function Content({ user }) {
+export function ContentRegister({ user }) {
   const [form, setForm] = useState({
     userId: user.id,
     name: "",

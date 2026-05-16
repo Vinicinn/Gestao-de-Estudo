@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../services/api.js";
 import "../styles/schedule.css";
 
-export function Schedule({ user }) {
+export function ScheduleRegister({ user }) {
   const [form, setForm] = useState({
     subject: "",
     topic: "",

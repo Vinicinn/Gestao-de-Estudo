@@ -1,14 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useState } from "react";
-import "../styles/register.css";
+import "../styles/UserRegister.css";
 
-export function Register() {
-  const [form, setForm] = useState({
-    name: "",
-    password: "",
-    passwordConfirm: "",
-  });
+export function UserRegister() {
+  const [form, setForm] = useState({ name: "", password: "", passwordConfirm: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -35,6 +31,7 @@ export function Register() {
     }
 
     setLoading(true);
+
     try {
       const response = await api.register(form.name, form.password);
 
@@ -52,18 +49,10 @@ export function Register() {
     <div className="register-page">
       <div className="register-window">
         <p className="register-title">Crie sua conta</p>
-        <p className="register-subtitle">
-          Faça cadastro para acessar sua conta
-        </p>
+        <p className="register-subtitle">Faça cadastro para acessar sua conta</p>
         <form className="register-form" onSubmit={handleSubmit}>
           <label className="register-label">Seu nome</label>
-          <input
-            className="register-input"
-            type="text"
-            name="name"
-            placeholder="João"
-            onChange={handleChange}
-          />
+          <input className="register-input" type="text" name="name" placeholder="João" onChange={handleChange} />
           <label className="register-label">Senha</label>
           <input
             className="register-input"
@@ -85,11 +74,7 @@ export function Register() {
           <button className="register-button" type="submit" disabled={loading}>
             Cadastrar
           </button>
-          <button
-            className="register-cancel-button"
-            type="button"
-            onClick={() => navigate("/login")}
-          >
+          <button className="register-cancel-button" type="button" onClick={() => navigate("/login")}>
             Cancelar
           </button>
         </form>
