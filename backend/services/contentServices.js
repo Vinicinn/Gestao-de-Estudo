@@ -203,10 +203,13 @@ export class ContentService {
       throw new Error("Nenhum conteúdo encontrado para o usuário");
     }
     const today = new Date();
+    const todayIso = today.toISOString().slice(0, 10);
 
     // Busca feedbacks de revisão do usuário e agrupa por contentId
     let feedbackByContent = {};
     let skippedCountByContent = {};
+    const reviewedTodayContentIds = new Set();
+    const skippedTodayContentIds = new Set();
     if (this.feedbackRepository) {
       try {
         const allFeedbacks = await this.feedbackRepository.findReviewFeedbackByUserId(userId);
@@ -215,7 +218,13 @@ export class ContentService {
           if (!key) continue;
           if (fb.skipped) {
             skippedCountByContent[key] = (skippedCountByContent[key] || 0) + 1;
+            if (fb.reviewDate === todayIso) {
+              skippedTodayContentIds.add(key);
+            }
             continue;
+          }
+          if (fb.reviewDate === todayIso) {
+            reviewedTodayContentIds.add(key);
           }
           if (!feedbackByContent[key]) feedbackByContent[key] = [];
           feedbackByContent[key].push(fb);
@@ -261,12 +270,13 @@ export class ContentService {
     Sem explicações. Apenas JSON válido.
 
     Conteúdos:
-    ${JSON.stringify(contents, null, 2)}
+    ${JSON.stringify(contentsWithFeedback, null, 2)}
     `;
 
     const response = await this.getResponse(prompt);
     const match = response.match(/\[[\s\S]*\]/);
     const data = JSON.parse(match[0]);
+    let priorityIndex = 0;
     for (let i = 0; i < data.length; i++) {
       const content = data[i];
 
@@ -274,8 +284,20 @@ export class ContentService {
         throw new Error(`Item inválido na posição ${i}: _id ausente`);
       }
 
+      const currentContent = contents.find((c) => c._id?.toString() === content._id?.toString());
       const nextDate = new Date(today);
-      nextDate.setDate(nextDate.getDate() + i);
+
+      if (reviewedTodayContentIds.has(content._id?.toString())) {
+        const interval = Math.max(1, Number(currentContent?.stability) || 1);
+        nextDate.setDate(nextDate.getDate() + interval);
+      } else if (skippedTodayContentIds.has(content._id?.toString())) {
+        const interval = Math.max(1, Number(currentContent?.stability) || 1);
+        nextDate.setDate(nextDate.getDate() + interval);
+      } else {
+        nextDate.setDate(nextDate.getDate() + priorityIndex);
+        priorityIndex += 1;
+      }
+
       const formatted = nextDate.toISOString().slice(0, 10);
 
       await this.contentRepository.updateNextReview(content._id, formatted);

@@ -83,6 +83,20 @@ export function HomePage({ user }) {
       .filter(Boolean),
   );
 
+  const visibleRecommendations = recommendations.filter((content) => {
+    const contentId = content._id?.toString();
+    if (!contentId) return false;
+    const hasNextReview = Boolean(content.nextReview);
+    const handledToday = completedTodayIds.has(contentId) || skippedTodayIds.has(contentId);
+
+    if (!handledToday) {
+      return true;
+    }
+
+    // Se já recebeu feedback hoje, volta a exibir quando a nova data já for futura.
+    return hasNextReview && content.nextReview > todayIso;
+  });
+
   // Enriquece o histórico de revisões recomendadas com nome e matéria do conteúdo
   const enrichedHistory = reviewHistory.map((r) => {
     const content = contents.find((c) => c._id?.toString() === r.contentId?.toString());
@@ -99,7 +113,7 @@ export function HomePage({ user }) {
     const alreadySkipped = skippedTodayIds.has(content._id?.toString());
 
     if (feedbackData.completed && !alreadyCompleted) {
-      await api.completeReview({ userId: user.id, contentId: content._id, reviewDate });
+      const completion = await api.completeReview({ userId: user.id, contentId: content._id, reviewDate });
       try {
         await api.submitReviewFeedback({
           userId: user.id,
@@ -109,14 +123,21 @@ export function HomePage({ user }) {
           perceivedDifficulty: feedbackData.perceivedDifficulty,
           note: feedbackData.note,
         });
-      } catch (_) {}
+      } catch (error) {
+        // Evita item "sumido" sem nova data quando o feedback falha.
+        if (completion?.review?._id) {
+          try {
+            await api.uncompleteReview(completion.review._id);
+          } catch (_) {}
+        }
+        throw error;
+      }
     } else if (!feedbackData.completed && alreadyCompleted) {
       await api.uncompleteReview(
         reviewHistory.find((r) => r.contentId?.toString() === content._id?.toString() && r.reviewDate === reviewDate)?._id,
       );
-      try {
-        await api.deleteReviewFeedback({ userId: user.id, contentId: content._id, reviewDate });
-      } catch (_) {}
+      await api.deleteReviewFeedback({ userId: user.id, contentId: content._id, reviewDate });
+      await api.submitSkippedReview({ userId: user.id, contentId: content._id, reviewDate });
     } else if (!feedbackData.completed && !alreadyCompleted && !alreadySkipped) {
       await api.submitSkippedReview({ userId: user.id, contentId: content._id, reviewDate });
     }
@@ -127,24 +148,25 @@ export function HomePage({ user }) {
   async function handleHistoryFeedback(review, feedbackData) {
     if (!feedbackData.completed) {
       await api.uncompleteReview(review._id);
-      try {
-        await api.deleteReviewFeedback({
-          userId: user.id,
-          contentId: review.contentId?.toString(),
-          reviewDate: review.reviewDate,
-        });
-      } catch (_) {}
+      await api.deleteReviewFeedback({
+        userId: user.id,
+        contentId: review.contentId?.toString(),
+        reviewDate: review.reviewDate,
+      });
+      await api.submitSkippedReview({
+        userId: user.id,
+        contentId: review.contentId?.toString(),
+        reviewDate: review.reviewDate,
+      });
     } else {
-      try {
-        await api.submitReviewFeedback({
-          userId: user.id,
-          contentId: review.contentId?.toString(),
-          reviewDate: review.reviewDate,
-          understandingScore: feedbackData.understandingScore,
-          perceivedDifficulty: feedbackData.perceivedDifficulty,
-          note: feedbackData.note,
-        });
-      } catch (_) {}
+      await api.submitReviewFeedback({
+        userId: user.id,
+        contentId: review.contentId?.toString(),
+        reviewDate: review.reviewDate,
+        understandingScore: feedbackData.understandingScore,
+        perceivedDifficulty: feedbackData.perceivedDifficulty,
+        note: feedbackData.note,
+      });
     }
     await loadData();
   }
@@ -183,7 +205,7 @@ export function HomePage({ user }) {
       <div className="home-window">
         <ContentsCard deleteContent={api.deleteContentById} userContents={contents} reload={loadData} reviewHistory={reviewHistory} />
         <RecommendationsCard
-          userRecommendations={recommendations}
+          userRecommendations={visibleRecommendations}
           formatDate={formatDate}
           reload={loadData}
         />

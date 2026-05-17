@@ -45,6 +45,7 @@ const feedbackService = new FeedbackService(
   feedbackRepository,
   reviewRepository,
   contentRepository,
+  contentService,
 );
 const feedbackController = new FeedbackController(feedbackService);
 

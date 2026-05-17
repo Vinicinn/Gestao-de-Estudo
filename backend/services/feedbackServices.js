@@ -1,10 +1,37 @@
 import { ObjectId } from "mongodb";
 
 export class FeedbackService {
-  constructor(feedbackRepository, reviewRepository, contentRepository) {
+  constructor(feedbackRepository, reviewRepository, contentRepository, contentService = null) {
     this.feedbackRepository = feedbackRepository;
     this.reviewRepository = reviewRepository;
     this.contentRepository = contentRepository;
+    this.contentService = contentService;
+  }
+
+  calculateNewInterval(perceivedDifficulty, understandingScore) {
+    const baseIntervalByDifficulty = {
+      facil: 15,
+      medio: 7,
+      dificil: 3,
+    };
+
+    const score = Number(understandingScore);
+    const scoreMultiplier = {
+      1: 0.8,
+      2: 0.9,
+      3: 1,
+      4: 1.15,
+      5: 1.3,
+    };
+
+    const base = baseIntervalByDifficulty[perceivedDifficulty] || 7;
+    const multiplier = scoreMultiplier[score] || 1;
+    return Math.max(1, Math.round(base * multiplier));
+  }
+
+  calculateRetryInterval(currentStability) {
+    const stability = Number(currentStability) || 1;
+    return Math.max(1, Math.floor(stability / 2));
   }
 
   async createReviewFeedback({
@@ -72,11 +99,37 @@ export class FeedbackService {
       feedbackType: "review",
     };
 
+    const normalizedReviewDate = reviewDate || new Date().toISOString().slice(0, 10);
+    const newInterval = this.calculateNewInterval(perceivedDifficulty, understandingScore);
+    const nextReviewDate = new Date(`${normalizedReviewDate}T00:00:00`);
+    nextReviewDate.setDate(nextReviewDate.getDate() + newInterval);
+    const nextReview = nextReviewDate.toISOString().slice(0, 10);
+
+    await this.contentRepository.update(contentId, {
+      difficulty: perceivedDifficulty,
+      stability: newInterval,
+      lastReview: normalizedReviewDate,
+      nextReview,
+    });
+
     await this.feedbackRepository.createReviewFeedback(feedback);
+
+    if (this.contentService) {
+      try {
+        await this.contentService.setAllContentReviews(userId);
+      } catch (_) {}
+    }
 
     return {
       message: "Feedback de revisão registrado com sucesso",
       feedback,
+      contentUpdate: {
+        contentId,
+        difficulty: perceivedDifficulty,
+        interval: newInterval,
+        lastReview: normalizedReviewDate,
+        nextReview,
+      },
     };
   }
 
@@ -229,9 +282,34 @@ export class FeedbackService {
       feedbackType: "review",
     };
 
+    const normalizedReviewDate = reviewDate || new Date().toISOString().slice(0, 10);
+    const retryInterval = this.calculateRetryInterval(content.stability);
+    const nextReviewDate = new Date(`${normalizedReviewDate}T00:00:00`);
+    nextReviewDate.setDate(nextReviewDate.getDate() + retryInterval);
+    const nextReview = nextReviewDate.toISOString().slice(0, 10);
+
+    await this.contentRepository.update(contentId, {
+      stability: retryInterval,
+      nextReview,
+    });
+
     await this.feedbackRepository.createSkippedReview(record);
 
-    return { message: "Revisão marcada como não realizada", record };
+    if (this.contentService) {
+      try {
+        await this.contentService.setAllContentReviews(userId);
+      } catch (_) {}
+    }
+
+    return {
+      message: "Revisão marcada como não realizada",
+      record,
+      contentUpdate: {
+        contentId,
+        interval: retryInterval,
+        nextReview,
+      },
+    };
   }
 
   async getSkippedReviewsByUser(userId) {
