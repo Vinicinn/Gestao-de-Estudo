@@ -1,9 +1,10 @@
 import { ObjectId } from "mongodb";
 
 export class ContentService {
-  constructor(contentRepository, getResponse) {
+  constructor(contentRepository, getResponse, feedbackRepository = null) {
     this.contentRepository = contentRepository;
     this.getResponse = getResponse;
+    this.feedbackRepository = feedbackRepository;
   }
 
   async getAllContents() {
@@ -142,7 +143,7 @@ export class ContentService {
 
     const contents = await this.contentRepository.findByUserId(userId);
 
-    return contents.sort((a, b) => a.nextReview.localeCompare(b.nextReview));
+    return contents.sort((a, b) => (a.nextReview || "").localeCompare(b.nextReview || ""));
   }
 
   async updateReviewDates(id, newNextReviews) {
@@ -195,6 +196,44 @@ export class ContentService {
       throw new Error("Nenhum conteúdo encontrado para o usuário");
     }
     const today = new Date();
+
+    // Busca feedbacks de revisão do usuário e agrupa por contentId
+    let feedbackByContent = {};
+    let skippedCountByContent = {};
+    if (this.feedbackRepository) {
+      try {
+        const allFeedbacks = await this.feedbackRepository.findReviewFeedbackByUserId(userId);
+        for (const fb of allFeedbacks) {
+          const key = fb.contentId?.toString();
+          if (!key) continue;
+          if (fb.skipped) {
+            skippedCountByContent[key] = (skippedCountByContent[key] || 0) + 1;
+            continue;
+          }
+          if (!feedbackByContent[key]) feedbackByContent[key] = [];
+          feedbackByContent[key].push(fb);
+        }
+        // Mantém os 5 mais recentes por conteúdo
+        for (const key of Object.keys(feedbackByContent)) {
+          feedbackByContent[key] = feedbackByContent[key]
+            .sort((a, b) => (b.reviewDate || "").localeCompare(a.reviewDate || ""))
+            .slice(0, 5)
+            .map((f) => ({
+              reviewDate: f.reviewDate,
+              understandingScore: f.understandingScore, // 1=muito difícil, 5=ótimo
+              perceivedDifficulty: f.perceivedDifficulty, // facil/medio/dificil
+            }));
+        }
+      } catch (_) {}
+    }
+
+    // Enriquece cada conteúdo com feedbacks recentes e contagem de revisões puladas
+    const contentsWithFeedback = contents.map((c) => ({
+      ...c,
+      recentFeedbacks: feedbackByContent[c._id?.toString()] || [],
+      skippedCount: skippedCountByContent[c._id?.toString()] || 0,
+    }));
+
     const prompt = `
     Você é um assistente de estudos.
 

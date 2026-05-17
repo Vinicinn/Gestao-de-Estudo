@@ -11,6 +11,7 @@ export function HomePage({ user }) {
   const [recommendations, setRecommendations] = useState([]);
   const [reviewHistory, setReviewHistory] = useState([]);
   const [schedules, setSchedules] = useState([]);
+  const [skippedReviews, setSkippedReviews] = useState([]);
 
   const today = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -37,11 +38,127 @@ export function HomePage({ user }) {
       setReviewHistory(historyData.reviews || []);
       setRecommendations(recData);
     } catch (error) {}
+
+    try {
+      const skippedData = await api.getSkippedReviews(user.id);
+      setSkippedReviews(skippedData.skipped || []);
+    } catch (_) {}
   }, [user.id]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  function getTodayIsoDate() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  const todayIso = getTodayIsoDate();
+
+  const completedTodayIds = new Set(
+    reviewHistory
+      .filter((r) => r.reviewDate === todayIso)
+      .map((r) => r.contentId?.toString())
+      .filter(Boolean),
+  );
+
+  const skippedTodayIds = new Set(
+    skippedReviews
+      .filter((s) => s.reviewDate === todayIso)
+      .map((s) => s.contentId?.toString())
+      .filter(Boolean),
+  );
+
+  // Enriquece o histórico de revisões recomendadas com nome e matéria do conteúdo
+  const enrichedHistory = reviewHistory.map((r) => {
+    const content = contents.find((c) => c._id?.toString() === r.contentId?.toString());
+    return {
+      ...r,
+      title: content?.name || "Revisão concluída",
+      subject: content?.subject || "",
+    };
+  });
+
+  async function handleReviewFeedback(content, feedbackData) {
+    const reviewDate = getTodayIsoDate();
+    const alreadyCompleted = completedTodayIds.has(content._id?.toString());
+    const alreadySkipped = skippedTodayIds.has(content._id?.toString());
+
+    if (feedbackData.completed && !alreadyCompleted) {
+      await api.completeReview({ userId: user.id, contentId: content._id, reviewDate });
+      try {
+        await api.submitReviewFeedback({
+          userId: user.id,
+          contentId: content._id,
+          reviewDate,
+          understandingScore: feedbackData.understandingScore,
+          perceivedDifficulty: feedbackData.perceivedDifficulty,
+          note: feedbackData.note,
+        });
+      } catch (_) {}
+    } else if (!feedbackData.completed && alreadyCompleted) {
+      await api.uncompleteReview(
+        reviewHistory.find((r) => r.contentId?.toString() === content._id?.toString() && r.reviewDate === reviewDate)?._id,
+      );
+      try {
+        await api.deleteReviewFeedback({ userId: user.id, contentId: content._id, reviewDate });
+      } catch (_) {}
+    } else if (!feedbackData.completed && !alreadyCompleted && !alreadySkipped) {
+      await api.submitSkippedReview({ userId: user.id, contentId: content._id, reviewDate });
+    }
+
+    await loadData();
+  }
+
+  async function handleHistoryFeedback(review, feedbackData) {
+    if (!feedbackData.completed) {
+      await api.uncompleteReview(review._id);
+      try {
+        await api.deleteReviewFeedback({
+          userId: user.id,
+          contentId: review.contentId?.toString(),
+          reviewDate: review.reviewDate,
+        });
+      } catch (_) {}
+    } else {
+      try {
+        await api.submitReviewFeedback({
+          userId: user.id,
+          contentId: review.contentId?.toString(),
+          reviewDate: review.reviewDate,
+          understandingScore: feedbackData.understandingScore,
+          perceivedDifficulty: feedbackData.perceivedDifficulty,
+          note: feedbackData.note,
+        });
+      } catch (_) {}
+    }
+    await loadData();
+  }
+
+  async function handleScheduleFeedback(schedule, feedbackData) {
+    if (feedbackData.completed && !schedule.completed) {
+      await api.completeSchedule(schedule._id);
+      try {
+        await api.submitScheduleFeedback({
+          userId: user.id,
+          scheduleId: schedule._id,
+          subject: schedule.subject,
+          topic: schedule.topic,
+          understandingScore: feedbackData.understandingScore,
+          perceivedDifficulty: feedbackData.perceivedDifficulty,
+          note: feedbackData.note,
+        });
+      } catch (_) {}
+    } else if (!feedbackData.completed && schedule.completed) {
+      await api.uncompleteSchedule(schedule._id);
+      try {
+        await api.deleteScheduleFeedback(schedule._id);
+      } catch (_) {}
+    } else if (!feedbackData.completed && !schedule.completed && !schedule.skipped) {
+      await api.skipSchedule(schedule._id);
+    }
+    await loadData();
+  }
 
   return (
     <div className="home-page">
@@ -51,7 +168,11 @@ export function HomePage({ user }) {
       </div>
       <div className="home-window">
         <ContentsCard deleteContent={api.deleteContentById} userContents={contents} reload={loadData} />
-        <RecommendationsCard userRecommendations={recommendations} formatDate={formatDate} />
+        <RecommendationsCard
+          userRecommendations={recommendations}
+          formatDate={formatDate}
+          reload={loadData}
+        />
         <div className="home-stack-column">
           <SchedulesCard
             deleteSchedule={api.deleteScheduleById}
@@ -59,7 +180,17 @@ export function HomePage({ user }) {
             reload={loadData}
             formatDate={formatDate}
           />
-          <HistoryCard userHistory={reviewHistory} formatDate={formatDate} />
+          <HistoryCard
+            userHistory={enrichedHistory}
+            userSchedules={schedules}
+            userRecommendations={recommendations}
+            completedTodayIds={completedTodayIds}
+            skippedTodayIds={skippedTodayIds}
+            formatDate={formatDate}
+            onHistoryFeedback={handleHistoryFeedback}
+            onScheduleFeedback={handleScheduleFeedback}
+            onReviewFeedback={handleReviewFeedback}
+          />
         </div>
       </div>
     </div>

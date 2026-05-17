@@ -9,15 +9,19 @@ import { getResponse } from "./config/groq.js";
 import { userRoutes } from "./routes/userRoutes.js";
 import { contentRoutes } from "./routes/contentRoutes.js";
 import { reviewRoutes } from "./routes/reviewRoutes.js";
+import { feedbackRoutes } from "./routes/feedbackRoutes.js";
 import { UserController } from "./controllers/userController.js";
 import { ContentController } from "./controllers/contentController.js";
 import { ReviewController } from "./controllers/reviewController.js";
+import { FeedbackController } from "./controllers/feedbackController.js";
 import { UserService } from "./services/userServices.js";
 import { ContentService } from "./services/contentServices.js";
 import { ReviewService } from "./services/reviewServices.js";
+import { FeedbackService } from "./services/feedbackServices.js";
 import { UserRepository } from "./repositories/userRepository.js";
 import { ContentRepository } from "./repositories/contentRepository.js";
 import { ReviewRepository } from "./repositories/reviewRepository.js";
+import { FeedbackRepository } from "./repositories/feedbackRepository.js";
 
 // banco de dados
 await connectToDatabase();
@@ -28,10 +32,21 @@ const reviewRepository = new ReviewRepository(db);
 const reviewService = new ReviewService(reviewRepository);
 const reviewController = new ReviewController(reviewService);
 
+// instanciando feedback repository antes de contentService para injeção de dependência
+const feedbackRepository = new FeedbackRepository(db);
+
 // instanciando camadas de conteudos
 const contentRepository = new ContentRepository(db);
-const contentService = new ContentService(contentRepository, getResponse);
+const contentService = new ContentService(contentRepository, getResponse, feedbackRepository);
 const contentController = new ContentController(contentService);
+
+// instanciando camadas de feedback (service e controller)
+const feedbackService = new FeedbackService(
+  feedbackRepository,
+  reviewRepository,
+  contentRepository,
+);
+const feedbackController = new FeedbackController(feedbackService);
 
 // instanciando camadas de usuario
 const userRepository = new UserRepository(db);
@@ -46,6 +61,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes(userController));
 app.use("/api/contents", contentRoutes(contentController));
 app.use("/api/reviews", reviewRoutes(reviewController));
+app.use("/api/feedback", feedbackRoutes(feedbackController));
 
 // qualquer outra rota nao definida
 app.use((req, res) => {

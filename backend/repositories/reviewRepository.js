@@ -45,6 +45,25 @@ export class ReviewRepository {
       .toArray();
   }
 
+  async findOneByQuery(query) {
+    return await this.collection.findOne(query);
+  }
+
+  async deleteById(id) {
+    return await this.collection.deleteOne({ _id: new ObjectId(id) });
+  }
+
+  async findScheduleById(id) {
+    return await this.collection.findOne({ _id: new ObjectId(id), type: "schedule" });
+  }
+
+  async updateSchedule(id, update) {
+    return await this.collection.updateOne(
+      { _id: new ObjectId(id), type: "schedule" },
+      { $set: update },
+    );
+  }
+
   async deleteAll() {
     await this.collection.deleteMany({});
   }

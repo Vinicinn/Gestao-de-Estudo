@@ -12,6 +12,11 @@ export function reviewRoutes(reviewController) {
   router.post("/complete", (req, res) => reviewController.completeReview(req, res));
   router.post("/schedule", (req, res) => reviewController.createReviewSchedule(req, res));
 
+  router.put("/schedule/:id/complete", (req, res) => reviewController.completeSchedule(req, res));
+  router.put("/schedule/:id/uncomplete", (req, res) => reviewController.uncompleteSchedule(req, res));
+  router.put("/schedule/:id/skip", (req, res) => reviewController.skipSchedule(req, res));
+
+  router.delete("/complete/:id", (req, res) => reviewController.uncompleteReview(req, res));
   router.delete("/all", (req, res) => reviewController.deleteAllReviews(req,res));
   router.delete("/schedule/:id", (req, res) => reviewController.deleteReviewSchedule(req, res));
   

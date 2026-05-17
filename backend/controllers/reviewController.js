@@ -165,4 +165,68 @@ export class ReviewController {
       });
     }
   }
+
+  async uncompleteReview(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ message: "ID da revisão é obrigatório" });
+      }
+      const result = await this.reviewService.uncompleteReview(id);
+      res.json({ message: "Conclusão desfeita com sucesso", review: result });
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao desfazer revisão",
+        error: error.message,
+      });
+    }
+  }
+
+  async completeSchedule(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ message: "ID do agendamento é obrigatório" });
+      }
+      const result = await this.reviewService.completeSchedule(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao concluir agendamento",
+        error: error.message,
+      });
+    }
+  }
+
+  async uncompleteSchedule(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ message: "ID do agendamento é obrigatório" });
+      }
+      const result = await this.reviewService.uncompleteSchedule(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao desfazer conclusão do agendamento",
+        error: error.message,
+      });
+    }
+  }
+
+  async skipSchedule(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ message: "ID do agendamento é obrigatório" });
+      }
+      const result = await this.reviewService.skipSchedule(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao marcar agendamento como não realizado",
+        error: error.message,
+      });
+    }
+  }
 }
