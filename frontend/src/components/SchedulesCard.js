@@ -3,13 +3,10 @@ import { useNavigate } from "react-router-dom";
 export function SchedulesCard({ deleteSchedule, userSchedules, reload, formatDate }) {
   const navigate = useNavigate();
 
-  async function handleDeleteSchedule(contentId) {
-    if (!window.confirm("Tem certeza que deseja excluir este agendamento?")) {
-      return;
-    }
-
+  async function handleDeleteSchedule(scheduleId) {
+    if (!window.confirm("Tem certeza que deseja excluir este agendamento?")) return;
     try {
-      await deleteSchedule(contentId);
+      await deleteSchedule(scheduleId);
       await reload();
     } catch (error) {
       alert(error.message || "Erro ao excluir agendamento");
@@ -24,27 +21,35 @@ export function SchedulesCard({ deleteSchedule, userSchedules, reload, formatDat
           +
         </button>
       </div>
-      {userSchedules.length === 0 ? (
-        <p className="home-empty">Nenhum agendamento cadastrado.</p>
-      ) : (
-        userSchedules.map((schedule) => (
-          <div className="home-item" key={schedule._id}>
-            <div className="home-item-text">
-              <p className="home-item-title">
-                {schedule.subject} - {schedule.topic}
-              </p>
-              <p className="home-item-sub">
-                {formatDate(schedule.reviewDate)} às {schedule.time}
-              </p>
-            </div>
-            <div>
-              <button className="home-item-button" onClick={() => handleDeleteSchedule(schedule._id)}>
+      <div className="home-history-scroll">
+        {userSchedules.length === 0 ? (
+          <p className="home-empty">Nenhum agendamento cadastrado.</p>
+        ) : (
+          userSchedules.map((schedule) => (
+            <div
+              className={`home-item${schedule.completed ? " home-item-completed" : ""}`}
+              key={schedule._id}
+            >
+              <div className="home-item-text">
+                <p className="home-item-title">
+                  {schedule.subject} - {schedule.topic}
+                </p>
+                <p className="home-item-sub">
+                  {formatDate(schedule.reviewDate)} às {schedule.time}
+                  {schedule.completed ? " ✓" : ""}
+                </p>
+              </div>
+              <button
+                className="home-item-button home-item-button-delete"
+                onClick={() => handleDeleteSchedule(schedule._id)}
+              >
                 x
               </button>
             </div>
-          </div>
-        ))
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 }
+

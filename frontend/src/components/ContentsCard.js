@@ -24,23 +24,25 @@ export function ContentsCard({ deleteContent, userContents, reload }) {
           +
         </button>
       </div>
-      {userContents.length === 0 ? (
-        <p className="home-empty">Nenhum conteúdo cadastrado.</p>
-      ) : (
-        userContents.map((content) => (
-          <div className="home-item" key={content._id}>
-            <div className="home-item-text">
-              <p className="home-item-title">{content.name}</p>
-              <p className="home-item-sub">{content.subject}</p>
+      <div className="home-history-scroll">
+        {userContents.length === 0 ? (
+          <p className="home-empty">Nenhum conteúdo cadastrado.</p>
+        ) : (
+          userContents.map((content) => (
+            <div className="home-item" key={content._id}>
+              <div className="home-item-text">
+                <p className="home-item-title">{content.name}</p>
+                <p className="home-item-sub">{content.subject}</p>
+              </div>
+              <div>
+                <button className="home-item-button" onClick={() => handleDeleteContent(content._id)}>
+                  x
+                </button>
+              </div>
             </div>
-            <div>
-              <button className="home-item-button" onClick={() => handleDeleteContent(content._id)}>
-                x
-              </button>
-            </div>
-          </div>
-        ))
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 }

@@ -90,6 +90,18 @@ export class ReviewService {
       throw new Error("IDs inválidos");
     }
 
+    // impedir duplicata na mesma data
+    const existing = await this.reviewRepository.findOneByQuery({
+      userId,
+      contentId: new ObjectId(contentId),
+      reviewDate,
+      type: "completed_review",
+    });
+
+    if (existing) {
+      throw new Error("Revisão já foi concluída nesta data");
+    }
+
     const completedAt = new Date().toISOString();
 
     const review = {
@@ -157,6 +169,85 @@ export class ReviewService {
       totalReviews: history.length,
       reviews: history.sort((a, b) => new Date(a.reviewDate) - new Date(b.reviewDate)),
     };
+  }
+
+  async uncompleteReview(reviewId) {
+    if (!ObjectId.isValid(reviewId)) {
+      throw new Error("ID inválido");
+    }
+
+    const review = await this.reviewRepository.findOneByQuery({
+      _id: new ObjectId(reviewId),
+      type: "completed_review",
+    });
+
+    if (!review) {
+      throw new Error("Revisão concluída não encontrada");
+    }
+
+    await this.reviewRepository.deleteById(reviewId);
+
+    return review;
+  }
+
+  async completeSchedule(scheduleId) {
+    if (!ObjectId.isValid(scheduleId)) {
+      throw new Error("ID inválido");
+    }
+
+    const schedule = await this.reviewRepository.findScheduleById(scheduleId);
+    if (!schedule) {
+      throw new Error("Agendamento não encontrado");
+    }
+    if (schedule.completed) {
+      throw new Error("Agendamento já está concluído");
+    }
+
+    await this.reviewRepository.updateSchedule(scheduleId, {
+      completed: true,
+      completedAt: new Date().toISOString(),
+    });
+
+    return { message: "Agendamento marcado como concluído" };
+  }
+
+  async uncompleteSchedule(scheduleId) {
+    if (!ObjectId.isValid(scheduleId)) {
+      throw new Error("ID inválido");
+    }
+
+    const schedule = await this.reviewRepository.findScheduleById(scheduleId);
+    if (!schedule) {
+      throw new Error("Agendamento não encontrado");
+    }
+    if (!schedule.completed) {
+      throw new Error("Agendamento não está concluído");
+    }
+
+    await this.reviewRepository.updateSchedule(scheduleId, {
+      completed: false,
+      completedAt: null,
+    });
+
+    return { message: "Conclusão desfeita com sucesso" };
+  }
+
+  async skipSchedule(scheduleId) {
+    if (!ObjectId.isValid(scheduleId)) {
+      throw new Error("ID inválido");
+    }
+
+    const schedule = await this.reviewRepository.findScheduleById(scheduleId);
+    if (!schedule) {
+      throw new Error("Agendamento não encontrado");
+    }
+
+    await this.reviewRepository.updateSchedule(scheduleId, {
+      skipped: true,
+      skippedAt: new Date().toISOString(),
+    });
+
+    return { message: "Agendamento marcado como não realizado" };
   }
 
   async deleteAllReviews() {
