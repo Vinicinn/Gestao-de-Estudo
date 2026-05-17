@@ -229,4 +229,20 @@ export class ReviewController {
       });
     }
   }
+
+  async deleteContentReviews(req, res) {
+    try {
+      const { contentId } = req.params;
+      if (!contentId) {
+        return res.status(400).json({ message: "ID do conteúdo é obrigatório" });
+      }
+      await this.reviewService.deleteContentReviews(contentId);
+      res.status(200).json({ message: "Revisões do conteúdo removidas com sucesso!" });
+    } catch (error) {
+      res.status(500).json({
+        message: "Falha ao remover revisões do conteúdo",
+        error: error.message,
+      });
+    }
+  }
 }

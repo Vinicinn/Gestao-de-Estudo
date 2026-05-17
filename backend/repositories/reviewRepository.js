@@ -71,4 +71,8 @@ export class ReviewRepository {
   async deleteSchedule(id) {
     return await this.collection.deleteOne({ _id: new ObjectId(id), type: "schedule" });
   }
+
+  async deleteContentReviews(contentId) {
+    return await this.collection.deleteMany({ contentId: new ObjectId(contentId) });
+  }
 }

@@ -273,6 +273,11 @@ export const api = {
   },
 
   async deleteContentById(contentId) {
+    await fetch(`${URL}/reviews/content/${contentId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+
     const response = await fetch(`${URL}/contents/${contentId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },

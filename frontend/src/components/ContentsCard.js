@@ -4,7 +4,7 @@ export function ContentsCard({ deleteContent, userContents, reload, reviewHistor
   const navigate = useNavigate();
 
   async function handleDeleteContent(contentId) {
-    if (!window.confirm("Tem certeza que deseja excluir este conteúdo?")) {
+    if (!window.confirm("Tem certeza que deseja excluir este conteúdo? Todas as revisões associadas a ele também serão excluídas.")) {
       return;
     }
 

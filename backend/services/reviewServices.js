@@ -267,4 +267,11 @@ export class ReviewService {
     }
     return { message: "Conteudo removido com sucesso" };
   }
+
+  async deleteContentReviews(contentId) {
+    if (!ObjectId.isValid(contentId)) {
+      throw new Error("ID inválido");
+    }
+    return await this.reviewRepository.deleteContentReviews(contentId);
+  }
 }
