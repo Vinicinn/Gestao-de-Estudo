@@ -32,7 +32,7 @@ export class ContentService {
     return content;
   }
 
-  async createContent(userId, name, subject, difficulty) {
+  async createContent(userId, name, subject, difficulty, goal) {
     const difficultMap = {
       facil: 15, // retém por 15 dias
       medio: 7, // retém por 7 dias
@@ -58,6 +58,12 @@ export class ContentService {
     if (!ObjectId.isValid(userId)) {
       throw new Error("ID de usuário inválido");
     }
+    if (isNaN(goal) || goal < 0) {
+      console.log(isNaN(goal));
+      console.log(goal);
+      
+      goal = 10;
+    }
 
     let result;
 
@@ -72,6 +78,7 @@ export class ContentService {
         createAt,
         lastReview,
         nextReview,
+        goal,
       });
 
       await this.setAllContentReviews(userId);

@@ -181,7 +181,7 @@ export function HomePage({ user }) {
         <span>{today}</span>
       </div>
       <div className="home-window">
-        <ContentsCard deleteContent={api.deleteContentById} userContents={contents} reload={loadData} />
+        <ContentsCard deleteContent={api.deleteContentById} userContents={contents} reload={loadData} reviewHistory={reviewHistory} />
         <RecommendationsCard
           userRecommendations={recommendations}
           formatDate={formatDate}

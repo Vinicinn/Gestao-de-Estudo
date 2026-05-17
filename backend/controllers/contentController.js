@@ -44,7 +44,7 @@ export class ContentController {
   async createContent(req, res) {
     // validacao de entrada
     try {
-      const { userId, name, subject, difficulty } = req.body;
+      const { userId, name, subject, difficulty, goal } = req.body;
       if (!userId) {
         return res.status(400).json({ message: "ID do usuário é obrigatório" });
       }
@@ -65,6 +65,7 @@ export class ContentController {
           name,
           subject,
           difficulty,
+          goal,
         ),
       );
     } catch (error) {

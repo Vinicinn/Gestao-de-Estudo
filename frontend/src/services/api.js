@@ -37,11 +37,11 @@ export const api = {
     return data.message;
   },
 
-  async createContent({ userId, name, subject, difficulty }) {
+  async createContent({ userId, name, subject, difficulty, goal }) {
     const response = await fetch(`${URL}/contents`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, name, subject, difficulty }),
+      body: JSON.stringify({ userId, name, subject, difficulty, goal }),
     });
 
     const data = await response.json();
@@ -121,14 +121,7 @@ export const api = {
     return data;
   },
 
-  async submitReviewFeedback({
-    userId,
-    contentId,
-    reviewDate,
-    understandingScore,
-    perceivedDifficulty,
-    note,
-  }) {
+  async submitReviewFeedback({ userId, contentId, reviewDate, understandingScore, perceivedDifficulty, note }) {
     const response = await fetch(`${URL}/feedback/review`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

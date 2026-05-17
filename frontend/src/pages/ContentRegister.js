@@ -10,6 +10,7 @@ export function ContentRegister({ user }) {
     name: "",
     subject: "",
     difficulty: "",
+    goal: 0,
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,19 +47,10 @@ export function ContentRegister({ user }) {
     <div className="content-page">
       <div className="content-window">
         <p className="content-title">Cadastro de Estudos</p>
-        <p className="content-subtitle">
-          Registre um novo estudo para acompanhar seu progressso e se organizar
-          melhor
-        </p>
+        <p className="content-subtitle">Registre um novo estudo para acompanhar seu progressso e se organizar melhor</p>
         <form className="content-form" onSubmit={handleSubmit}>
           <label className="content-label">Matéria</label>
-          <input
-            className="content-input"
-            type="text"
-            name="name"
-            placeholder="Matemática"
-            onChange={handleChange}
-          />
+          <input className="content-input" type="text" name="name" placeholder="Matemática" onChange={handleChange} />
           <label className="content-label">Tópico</label>
           <input
             className="content-input"
@@ -67,20 +59,16 @@ export function ContentRegister({ user }) {
             placeholder="Álgebra Linear"
             onChange={handleChange}
           />
-          <label className="content-label">
-            Sua dificuldade com o conteudo
-          </label>
-          <select
-            className="content-input"
-            name="difficulty"
-            value={form.difficulty}
-            onChange={handleChange}
-          >
+          <label className="content-label">Sua dificuldade com o conteudo</label>
+          <select className="content-input" name="difficulty" value={form.difficulty} onChange={handleChange}>
             <option value="">Selecione a dificuldade</option>
             <option value="facil">Facil</option>
             <option value="medio">Medio</option>
             <option value="dificil">Dificil</option>
           </select>
+
+          <label className="content-label">Meta de revisões (opcional)</label>
+          <input className="content-input" type="number" name="goal" placeholder="5" onChange={handleChange} />
 
           {error && <p className="content-error">{error}</p>}
           <button className="content-button" type="submit" disabled={loading}>
