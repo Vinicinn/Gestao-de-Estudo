@@ -24,20 +24,34 @@ export function HomePage({ user }) {
     return new Date(`${date}T00:00:00`).toLocaleDateString("pt-BR");
   }
 
-  const loadData = useCallback(async () => {
-    try {
-      const [contentData, scheduleData, historyData, recData] = await Promise.all([
-        api.getUserContents(user.id),
-        api.getUserSchedules(user.id),
-        api.getUserReviewHistory(user.id),
-        api.getUserRecommendations(user.id),
-      ]);
+  function getLocalIsoDate() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 
-      setContents(contentData);
-      setSchedules(scheduleData);
-      setReviewHistory(historyData.reviews || []);
-      setRecommendations(recData);
-    } catch (error) {}
+  const loadData = useCallback(async () => {
+    const [contentResult, scheduleResult, historyResult, recResult] = await Promise.allSettled([
+      api.getUserContents(user.id),
+      api.getUserSchedules(user.id),
+      api.getUserReviewHistory(user.id),
+      api.getUserRecommendations(user.id),
+    ]);
+
+    if (contentResult.status === "fulfilled") {
+      setContents(contentResult.value);
+    }
+    if (scheduleResult.status === "fulfilled") {
+      setSchedules(scheduleResult.value);
+    }
+    if (historyResult.status === "fulfilled") {
+      setReviewHistory(historyResult.value.reviews || []);
+    }
+    if (recResult.status === "fulfilled") {
+      setRecommendations(recResult.value);
+    }
 
     try {
       const skippedData = await api.getSkippedReviews(user.id);
@@ -50,7 +64,7 @@ export function HomePage({ user }) {
   }, [loadData]);
 
   function getTodayIsoDate() {
-    return new Date().toISOString().slice(0, 10);
+    return getLocalIsoDate();
   }
 
   const todayIso = getTodayIsoDate();

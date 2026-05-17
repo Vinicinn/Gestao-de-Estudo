@@ -15,7 +15,10 @@ export function HistoryCard({
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+    now.getDate(),
+  ).padStart(2, "0")}`;
 
   // Recomendações vencidas ou de hoje (excluindo as que já aparecem como completed_review no mesmo dia)
   const completedContentIds = new Set(
