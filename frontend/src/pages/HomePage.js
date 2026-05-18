@@ -33,11 +33,12 @@ export function HomePage({ user }) {
   }
 
   const loadData = useCallback(async () => {
-    const [contentResult, scheduleResult, historyResult, recResult] = await Promise.allSettled([
+    const [contentResult, scheduleResult, historyResult, recResult, skippedResult] = await Promise.allSettled([
       api.getUserContents(user.id),
       api.getUserSchedules(user.id),
       api.getUserReviewHistory(user.id),
       api.getUserRecommendations(user.id),
+      api.getSkippedReviews(user.id),
     ]);
 
     if (contentResult.status === "fulfilled") {
@@ -52,11 +53,9 @@ export function HomePage({ user }) {
     if (recResult.status === "fulfilled") {
       setRecommendations(recResult.value);
     }
-
-    try {
-      const skippedData = await api.getSkippedReviews(user.id);
-      setSkippedReviews(skippedData.skipped || []);
-    } catch (_) {}
+    if (skippedResult.status === "fulfilled") {
+      setSkippedReviews(skippedResult.value.skipped || []);
+    }
   }, [user.id]);
 
   useEffect(() => {
@@ -217,6 +216,7 @@ export function HomePage({ user }) {
             formatDate={formatDate}
           />
           <HistoryCard
+            userId={user.id}
             userHistory={enrichedHistory}
             userSchedules={schedules}
             userRecommendations={recommendations}

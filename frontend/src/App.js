@@ -7,6 +7,7 @@ import { UserRegister } from "./pages/UserRegister.js";
 import { HomePage } from "./pages/HomePage.js";
 import { ContentRegister } from "./pages/ContentRegister.js";
 import { ScheduleRegister } from "./pages/ScheduleRegister.js";
+import { StatsPage } from "./pages/StatsPage.js";
 
 function App() {
   const [isLogged, setIsLogged] = useState(false);
@@ -20,6 +21,7 @@ function App() {
         <Route path="/register" element={<UserRegister />} />
         <Route path="/content" element={isLogged ? <ContentRegister user={user} /> : <Navigate to={"/login"} />} />
         <Route path="/schedule" element={isLogged ? <ScheduleRegister user={user} /> : <Navigate to={"/login"} />} />
+        <Route path="/stats" element={isLogged ? <StatsPage user={user} /> : <Navigate to={"/login"} />} />
       </Routes>
     </HashRouter>
   );
