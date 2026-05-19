@@ -12,6 +12,7 @@ export function HomePage({ user }) {
   const [reviewHistory, setReviewHistory] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [skippedReviews, setSkippedReviews] = useState([]);
+  const userId = user?.id;
 
   const today = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -33,12 +34,16 @@ export function HomePage({ user }) {
   }
 
   const loadData = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
+
     const [contentResult, scheduleResult, historyResult, recResult, skippedResult] = await Promise.allSettled([
-      api.getUserContents(user.id),
-      api.getUserSchedules(user.id),
-      api.getUserReviewHistory(user.id),
-      api.getUserRecommendations(user.id),
-      api.getSkippedReviews(user.id),
+      api.getUserContents(userId),
+      api.getUserSchedules(userId),
+      api.getUserReviewHistory(userId),
+      api.getUserRecommendations(userId),
+      api.getSkippedReviews(userId),
     ]);
 
     if (contentResult.status === "fulfilled") {
@@ -56,7 +61,7 @@ export function HomePage({ user }) {
     if (skippedResult.status === "fulfilled") {
       setSkippedReviews(skippedResult.value.skipped || []);
     }
-  }, [user.id]);
+  }, [userId]);
 
   useEffect(() => {
     loadData();
@@ -107,15 +112,19 @@ export function HomePage({ user }) {
   });
 
   async function handleReviewFeedback(content, feedbackData) {
+    if (!userId) {
+      return;
+    }
+
     const reviewDate = getTodayIsoDate();
     const alreadyCompleted = completedTodayIds.has(content._id?.toString());
     const alreadySkipped = skippedTodayIds.has(content._id?.toString());
 
     if (feedbackData.completed && !alreadyCompleted) {
-      const completion = await api.completeReview({ userId: user.id, contentId: content._id, reviewDate });
+      const completion = await api.completeReview({ userId, contentId: content._id, reviewDate });
       try {
         await api.submitReviewFeedback({
-          userId: user.id,
+          userId,
           contentId: content._id,
           reviewDate,
           understandingScore: feedbackData.understandingScore,
@@ -135,31 +144,35 @@ export function HomePage({ user }) {
       await api.uncompleteReview(
         reviewHistory.find((r) => r.contentId?.toString() === content._id?.toString() && r.reviewDate === reviewDate)?._id,
       );
-      await api.deleteReviewFeedback({ userId: user.id, contentId: content._id, reviewDate });
-      await api.submitSkippedReview({ userId: user.id, contentId: content._id, reviewDate });
+      await api.deleteReviewFeedback({ userId, contentId: content._id, reviewDate });
+      await api.submitSkippedReview({ userId, contentId: content._id, reviewDate });
     } else if (!feedbackData.completed && !alreadyCompleted && !alreadySkipped) {
-      await api.submitSkippedReview({ userId: user.id, contentId: content._id, reviewDate });
+      await api.submitSkippedReview({ userId, contentId: content._id, reviewDate });
     }
 
     await loadData();
   }
 
   async function handleHistoryFeedback(review, feedbackData) {
+    if (!userId) {
+      return;
+    }
+
     if (!feedbackData.completed) {
       await api.uncompleteReview(review._id);
       await api.deleteReviewFeedback({
-        userId: user.id,
+        userId,
         contentId: review.contentId?.toString(),
         reviewDate: review.reviewDate,
       });
       await api.submitSkippedReview({
-        userId: user.id,
+        userId,
         contentId: review.contentId?.toString(),
         reviewDate: review.reviewDate,
       });
     } else {
       await api.submitReviewFeedback({
-        userId: user.id,
+        userId,
         contentId: review.contentId?.toString(),
         reviewDate: review.reviewDate,
         understandingScore: feedbackData.understandingScore,
@@ -171,11 +184,15 @@ export function HomePage({ user }) {
   }
 
   async function handleScheduleFeedback(schedule, feedbackData) {
+    if (!userId) {
+      return;
+    }
+
     if (feedbackData.completed && !schedule.completed) {
       await api.completeSchedule(schedule._id);
       try {
         await api.submitScheduleFeedback({
-          userId: user.id,
+          userId,
           scheduleId: schedule._id,
           subject: schedule.subject,
           topic: schedule.topic,
@@ -193,6 +210,10 @@ export function HomePage({ user }) {
       await api.skipSchedule(schedule._id);
     }
     await loadData();
+  }
+
+  if (!userId) {
+    return <div className="home-page">Carregando usuário...</div>;
   }
 
   return (
@@ -216,7 +237,7 @@ export function HomePage({ user }) {
             formatDate={formatDate}
           />
           <HistoryCard
-            userId={user.id}
+            userId={userId}
             userHistory={enrichedHistory}
             userSchedules={schedules}
             userRecommendations={recommendations}

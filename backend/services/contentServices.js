@@ -168,6 +168,9 @@ export class ContentService {
     if (!Array.isArray(newNextReviews)) {
       throw new Error("Próximas revisões deve ser um array de datas");
     }
+    if (newNextReviews.length === 0) {
+      throw new Error("Informe ao menos uma data de revisão");
+    }
 
     for (const date of newNextReviews) {
       if (typeof date !== "string") {
@@ -185,15 +188,18 @@ export class ContentService {
 
     // ordenar as datas
     const sortedDates = newNextReviews.slice().sort();
+    const nextReview = sortedDates[0];
 
     // atualizar o conteúdo
     await this.contentRepository.update(id, {
       nextReviews: sortedDates,
+      nextReview,
     });
 
     return {
       ...content,
       nextReviews: sortedDates,
+      nextReview,
     };
   }
 

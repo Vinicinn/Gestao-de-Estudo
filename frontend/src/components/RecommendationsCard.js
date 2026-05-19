@@ -10,7 +10,9 @@ export function RecommendationsCard({ userRecommendations, formatDate, reload })
       await api.updateContentReviewDates(contentId, [newDate]);
       setAdjustingId(null);
       if (reload) await reload();
-    } catch (_) {}
+    } catch (error) {
+      alert(error.message || "Não foi possível atualizar a data de revisão");
+    }
   }
 
   return (
