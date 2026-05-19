@@ -54,6 +54,27 @@ export class FeedbackRepository {
     });
   }
 
+  async deleteReviewFeedbackByContentId(contentId) {
+    let query;
+    // Se contentId é uma string válida, converte para ObjectId
+    if (typeof contentId === 'string' && ObjectId.isValid(contentId)) {
+      query = {
+        contentId: new ObjectId(contentId),
+        feedbackType: "review"
+      };
+    } else {
+      // Se já é ObjectId, usa diretamente
+      query = {
+        contentId: contentId,
+        feedbackType: "review"
+      };
+    }
+    
+    const result = await this.reviewFeedbackCollection.deleteMany(query);
+    console.log(`[FeedbackRepository] Deletados ${result.deletedCount} feedbacks com contentId ${contentId}`);
+    return result;
+  }
+
   async createScheduleFeedback(feedback) {
     return await this.scheduleFeedbackCollection.insertOne(feedback);
   }

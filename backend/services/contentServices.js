@@ -129,6 +129,20 @@ export class ContentService {
     if (content === null) {
       throw new Error("Conteúdo não encontrado");
     }
+
+    // Remove feedbacks associados ao conteúdo para manter estatísticas consistentes.
+    console.log("🗑️ Deletando feedbacks para conteúdo:", id);
+    if (this.feedbackRepository) {
+      try {
+        const deleteResult = await this.feedbackRepository.deleteReviewFeedbackByContentId(id);
+        console.log("✅ Feedbacks deletados:", deleteResult.deletedCount);
+      } catch (error) {
+        console.error("❌ Erro ao deletar feedbacks:", error.message);
+      }
+    } else {
+      console.warn("⚠️ feedbackRepository não foi injetado!");
+    }
+
     // verificacao se a exclusão ocorreu com sucesso
     const result = await this.contentRepository.delete(id);
     if (result.acknowledged != true) {

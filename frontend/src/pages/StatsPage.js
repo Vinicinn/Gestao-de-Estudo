@@ -35,6 +35,18 @@ export function StatsPage({ user }) {
       });
     }
     fetchStats();
+
+    // Recarrega estatísticas quando a página fica visível
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchStats();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [user.id]);
 
   return (

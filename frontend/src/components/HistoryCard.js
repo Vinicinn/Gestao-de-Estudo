@@ -22,7 +22,6 @@ export function HistoryCard({
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
-  const [statsLoadedUserId, setStatsLoadedUserId] = useState(null);
 
   const now = new Date();
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
@@ -213,10 +212,6 @@ export function HistoryCard({
       return;
     }
 
-    if (statsLoadedUserId === userId) {
-      return;
-    }
-
     let active = true;
     async function loadStatsFeedback() {
       try {
@@ -227,7 +222,6 @@ export function HistoryCard({
           return;
         }
         setFeedbacks(response.feedbacks || []);
-        setStatsLoadedUserId(userId);
       } catch (error) {
         if (!active) {
           return;
@@ -240,11 +234,9 @@ export function HistoryCard({
       }
     }
 
+    // Recarrega imediatamente quando modal abre
     loadStatsFeedback();
-    return () => {
-      active = false;
-    };
-  }, [showStats, statsLoadedUserId, userId]);
+  }, [showStats, userId]);
 
   return (
     <>
@@ -280,6 +272,7 @@ export function HistoryCard({
                     <p className="home-item-sub">
                       {getItemSubLabel(item)}
                       {date ? ` · ${formatDate(date)}` : ""}
+                      {item._type === "review" && item.nextReview ? ` · Próxima: ${formatDate(item.nextReview)}` : ""}
                       {item._type === "schedule" && item.time ? ` às ${item.time}` : ""}
                     </p>
                   </div>

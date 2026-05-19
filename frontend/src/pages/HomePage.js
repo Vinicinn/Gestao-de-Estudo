@@ -101,13 +101,15 @@ export function HomePage({ user }) {
     return hasNextReview && content.nextReview > todayIso;
   });
 
-  // Enriquece o histórico de revisões recomendadas com nome e matéria do conteúdo
+  // Enriquece o histórico de revisões recomendadas com nome, matéria e datas do conteúdo
   const enrichedHistory = reviewHistory.map((r) => {
     const content = contents.find((c) => c._id?.toString() === r.contentId?.toString());
     return {
       ...r,
       title: content?.name || "Revisão concluída",
       subject: content?.subject || "",
+      nextReview: content?.nextReview || null,
+      lastReview: content?.lastReview || null,
     };
   });
 
