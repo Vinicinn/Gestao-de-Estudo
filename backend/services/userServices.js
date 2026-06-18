@@ -5,83 +5,78 @@ export class UserService {
     this.userRepository = userRepository;
   }
 
-  async getAllUsers() {
-    return await this.userRepository.getAllUsers();
+  sanitizeUser(user) {
+    return {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    };
   }
 
-  async createUser({ name, password }) {
-    // validacao de negocio
-    name = name.trim();
-    password = password.trim();
+  async getAllUsers() {
+    const users = await this.userRepository.getAllUsers();
+    return users.map((user) => this.sanitizeUser(user));
+  }
 
-    if (!name) {
-      throw new Error("Nome invalido");
-    }
-    if (!password) {
-      throw new Error("Senha invalida");
-    }
-    if (name.length < 2) {
-      throw new Error("Nome deve ter pelo menos 2 caracteres");
-    }
-    if (password.length < 4) {
-      throw new Error("Senha deve ter pelo menos 4 caracteres");
-    }
-
-    const user = { name, password };
-    await this.userRepository.createUser(user);
+  async createUser() {
+    throw new Error("Use /api/auth/register para cadastrar usuarios");
   }
 
   async getUserById(id) {
-    // validacao de negocio
     if (!ObjectId.isValid(id)) {
-      throw new Error("ID inválido");
+      throw new Error("ID invalido");
     }
 
     const user = await this.userRepository.getUserById(id);
     if (user === null) {
-      throw new Error("Usuario não encontrado");
+      throw new Error("Usuario nao encontrado");
     }
-    return user;
+
+    return this.sanitizeUser(user);
   }
 
   async updateUser(id, update) {
-    update.name = update.name.trim();
-    update.password = update.password.trim();
-
-    // validacao de negocio
     if (!ObjectId.isValid(id)) {
-      throw new Error("ID inválido");
+      throw new Error("ID invalido");
     }
-    if (!update.name) {
+    if (update.password) {
+      throw new Error("Use um fluxo especifico de autenticacao para alterar senha");
+    }
+
+    const nextUpdate = {};
+
+    if (update.name) {
+      nextUpdate.name = update.name.trim();
+    }
+    if (update.email) {
+      nextUpdate.email = update.email.trim().toLowerCase();
+    }
+    if (!nextUpdate.name) {
       throw new Error("Nome invalido");
     }
-    if (!update.password) {
-      throw new Error("Senha invalida");
-    }
-    if (update.name.length < 2) {
+    if (nextUpdate.name.length < 2) {
       throw new Error("Nome deve ter pelo menos 2 caracteres");
     }
-    if (update.password.length < 4) {
-      throw new Error("Senha deve ter pelo menos 4 caracteres");
+    if (nextUpdate.email && !nextUpdate.email.includes("@")) {
+      throw new Error("Email invalido");
     }
 
     const user = await this.userRepository.getUserById(id);
     if (user === null) {
-      throw new Error("Usuario não encontrado");
+      throw new Error("Usuario nao encontrado");
     }
 
-    await this.userRepository.updateUser(id, update);
+    await this.userRepository.updateUser(id, nextUpdate);
   }
 
   async deleteUser(id) {
-    // validacao de negocio
     if (!ObjectId.isValid(id)) {
-      throw new Error("ID inválido");
+      throw new Error("ID invalido");
     }
 
     const user = await this.userRepository.getUserById(id);
     if (user === null) {
-      throw new Error("Usuario não encontrado");
+      throw new Error("Usuario nao encontrado");
     }
 
     await this.userRepository.deleteUser(id);
@@ -96,6 +91,7 @@ export class UserService {
       throw new Error("Nome invalido");
     }
 
-    return await this.userRepository.getUserByName(name);
+    const user = await this.userRepository.getUserByName(name);
+    return user ? this.sanitizeUser(user) : null;
   }
 }

@@ -9,70 +9,54 @@ export class UserController {
   }
 
   async createUser(req, res) {
-    // validacao de entrada
-    try {
-      const { name, password } = req.body;
-      if (!name) {
-        return res.status(400).json({ message: "Nome é obrigatório" });
-      }
-      if (!password) {
-        return res.status(400).json({ message: "Senha é obrigatória" });
-      }
-      await this.userService.createUser({ name, password });
-      res.status(201).json({ message: "usuario criado" });
-    } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Error ao criar usuario: ", error: error.message });
-    }
+    return res.status(410).json({
+      message: "Use /api/auth/register para cadastrar usuarios",
+    });
   }
 
   async getUserById(req, res) {
-    // validacao de entrada
     try {
       const { id } = req.params;
       if (!id) {
-        return res.status(400).json({ message: "ID é obrigatório" });
+        return res.status(400).json({ message: "ID é obrigatorio" });
       }
       const user = await this.userService.getUserById(id);
       res.json(user);
     } catch (error) {
       res
         .status(500)
-        .json({ message: "Error ao buscar usuario", error: error.message });
+        .json({ message: "Erro ao buscar usuario", error: error.message });
     }
   }
 
   async updateUser(req, res) {
-    // validacao de entrada
     try {
       const { id } = req.params;
       if (!id) {
-        return res.status(400).json({ message: "ID é obrigatório" });
+        return res.status(400).json({ message: "ID é obrigatorio" });
       }
       const update = req.body;
       await this.userService.updateUser(id, update);
       res.json({ message: "Usuario atualizado com sucesso" });
     } catch (error) {
       res.status(500).json({
-        message: "Error ao atualizar usuario",
+        message: "Erro ao atualizar usuario",
         error: error.message,
       });
     }
   }
 
   async deleteUser(req, res) {
-    // validacao de entrada
     try {
       const { id } = req.params;
       if (!id) {
-        return res.status(400).json({ message: "ID é obrigatório" });
+        return res.status(400).json({ message: "ID é obrigatorio" });
       }
       await this.userService.deleteUser(id);
       res.json({ message: "Usuario deletado com sucesso" });
     } catch (error) {
       res.status(500).json({
-        message: "Error ao deletar usuario",
+        message: "Erro ao deletar usuario",
         error: error.message,
       });
     }
@@ -91,30 +75,8 @@ export class UserController {
   }
 
   async loginVerify(req, res) {
-    try {
-      const { name, password } = req.body;
-
-      if (!name) {
-        return res.status(400).json({ message: "Nome invalido" });
-      }
-      if (!password) {
-        return res.status(400).json({ message: "Senha invalida" });
-      }
-
-      const user = await this.userService.getUserByName(name);
-      if (user === null || user.password != password) {
-        return res.status(400).json({ message: "Nome ou senha incorretos" });
-      }
-
-      return res.status(200).json({
-        message: "Usuario verificado com sucesso",
-        id: user._id,
-        name: user.name,
-      });
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Erro ao verificar usuario", error: error.message });
-    }
+    return res.status(410).json({
+      message: "Use /api/auth/login para autenticar usuarios",
+    });
   }
 }

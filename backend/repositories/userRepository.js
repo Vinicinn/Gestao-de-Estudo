@@ -14,7 +14,7 @@ export class UserRepository {
   }
 
   async createUser(user) {
-    await this.collection.insertOne(user);
+    return await this.collection.insertOne(user);
   }
 
   async updateUser(id, update) {
@@ -34,5 +34,9 @@ export class UserRepository {
 
   async getUserByName(name) {
     return await this.collection.findOne({ name });
+  }
+
+  async getUserByEmail(email) {
+    return await this.collection.findOne({ email });
   }
 }
