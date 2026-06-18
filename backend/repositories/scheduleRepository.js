@@ -1,12 +1,8 @@
 import { ObjectId } from "mongodb";
 
-export class FeedbackRepository {
+export class ScheduleRepository {
   constructor(database) {
-    this.collection = database.collection("feedbacks");
-  }
-
-  async create(feedback) {
-    return await this.collection.insertOne(feedback);
+    this.collection = database.collection("schedules");
   }
 
   async findByUserId(userId) {
@@ -15,6 +11,17 @@ export class FeedbackRepository {
 
   async findByIdAndUserId(id, userId) {
     return await this.collection.findOne({ _id: new ObjectId(id), userId });
+  }
+
+  async create(schedule) {
+    return await this.collection.insertOne(schedule);
+  }
+
+  async update(id, update) {
+    return await this.collection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: update },
+    );
   }
 
   async delete(id) {
