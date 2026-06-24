@@ -68,7 +68,6 @@ export class BaseService {
   }
 
   async updateOwned(id, userId, data) {
-    await this.getOwnedById(id, userId);
     await this.repository.update(id, data);
     return { message: `${this.entityName} atualizado com sucesso` };
   }

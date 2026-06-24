@@ -13,15 +13,6 @@ export class UserService {
     };
   }
 
-  async getAllUsers() {
-    const users = await this.userRepository.getAllUsers();
-    return users.map((user) => this.sanitizeUser(user));
-  }
-
-  async createUser() {
-    throw new Error("Use /api/auth/register para cadastrar usuarios");
-  }
-
   async getUserById(id) {
     if (!ObjectId.isValid(id)) {
       throw new Error("ID invalido");
@@ -51,10 +42,13 @@ export class UserService {
     if (update.email) {
       nextUpdate.email = update.email.trim().toLowerCase();
     }
-    if (!nextUpdate.name) {
+    if (!nextUpdate.name && !nextUpdate.email) {
+      throw new Error("Informe ao menos um campo para atualizar");
+    }
+    if (nextUpdate.name === "") {
       throw new Error("Nome invalido");
     }
-    if (nextUpdate.name.length < 2) {
+    if (nextUpdate.name && nextUpdate.name.length < 2) {
       throw new Error("Nome deve ter pelo menos 2 caracteres");
     }
     if (nextUpdate.email && !nextUpdate.email.includes("@")) {
@@ -64,6 +58,13 @@ export class UserService {
     const user = await this.userRepository.getUserById(id);
     if (user === null) {
       throw new Error("Usuario nao encontrado");
+    }
+
+    if (nextUpdate.email) {
+      const userWithEmail = await this.userRepository.getUserByEmail(nextUpdate.email);
+      if (userWithEmail && userWithEmail._id.toString() !== id) {
+        throw new Error("Email ja cadastrado");
+      }
     }
 
     await this.userRepository.updateUser(id, nextUpdate);
@@ -80,18 +81,5 @@ export class UserService {
     }
 
     await this.userRepository.deleteUser(id);
-  }
-
-  async deleteAllUsers() {
-    await this.userRepository.deleteAll();
-  }
-
-  async getUserByName(name) {
-    if (!name) {
-      throw new Error("Nome invalido");
-    }
-
-    const user = await this.userRepository.getUserByName(name);
-    return user ? this.sanitizeUser(user) : null;
   }
 }

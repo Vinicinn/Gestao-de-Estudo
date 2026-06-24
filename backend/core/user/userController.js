@@ -3,80 +3,39 @@ export class UserController {
     this.userService = userService;
   }
 
-  async getAllUsers(req, res) {
-    const users = await this.userService.getAllUsers();
-    res.json(users);
-  }
-
-  async createUser(req, res) {
-    return res.status(410).json({
-      message: "Use /api/auth/register para cadastrar usuarios",
-    });
-  }
-
-  async getUserById(req, res) {
+  async getCurrentUser(req, res) {
     try {
-      const { id } = req.params;
-      if (!id) {
-        return res.status(400).json({ message: "ID é obrigatorio" });
-      }
-      const user = await this.userService.getUserById(id);
-      res.json(user);
+      const user = await this.userService.getUserById(req.user.id);
+      return res.status(200).json(user);
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Erro ao buscar usuario", error: error.message });
+      return res.status(404).json({
+        message: "Usuario nao encontrado",
+        error: error.message,
+      });
     }
   }
 
-  async updateUser(req, res) {
+  async updateCurrentUser(req, res) {
     try {
-      const { id } = req.params;
-      if (!id) {
-        return res.status(400).json({ message: "ID é obrigatorio" });
-      }
-      const update = req.body;
-      await this.userService.updateUser(id, update);
-      res.json({ message: "Usuario atualizado com sucesso" });
+      await this.userService.updateUser(req.user.id, req.body);
+      return res.status(200).json({ message: "Usuario atualizado com sucesso" });
     } catch (error) {
-      res.status(500).json({
+      return res.status(400).json({
         message: "Erro ao atualizar usuario",
         error: error.message,
       });
     }
   }
 
-  async deleteUser(req, res) {
+  async deleteCurrentUser(req, res) {
     try {
-      const { id } = req.params;
-      if (!id) {
-        return res.status(400).json({ message: "ID é obrigatorio" });
-      }
-      await this.userService.deleteUser(id);
-      res.json({ message: "Usuario deletado com sucesso" });
+      await this.userService.deleteUser(req.user.id);
+      return res.status(200).json({ message: "Usuario deletado com sucesso" });
     } catch (error) {
-      res.status(500).json({
+      return res.status(400).json({
         message: "Erro ao deletar usuario",
         error: error.message,
       });
     }
-  }
-
-  async deleteAllUsers(req, res) {
-    try {
-      await this.userService.deleteAllUsers();
-      res.status(200).json({ message: "Usuarios removidos com sucesso!" });
-    } catch (error) {
-      res.status(500).json({
-        message: "Falha ao remover todos os usuarios",
-        error: error.message,
-      });
-    }
-  }
-
-  async loginVerify(req, res) {
-    return res.status(410).json({
-      message: "Use /api/auth/login para autenticar usuarios",
-    });
   }
 }
