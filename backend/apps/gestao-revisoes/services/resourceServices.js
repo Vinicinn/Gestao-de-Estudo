@@ -1,15 +1,10 @@
-import { ObjectId } from "mongodb";
+import { BaseService } from "../../../core/baseService.js";
 
-export class ResourceService {
+export class ResourceService extends BaseService {
   constructor(resourceRepository, getResponse) {
+    super(resourceRepository, "Recurso");
     this.resourceRepository = resourceRepository;
     this.getResponse = getResponse;
-  }
-
-  validateUserId(userId) {
-    if (!ObjectId.isValid(userId)) {
-      throw new Error("ID de usuario invalido");
-    }
   }
 
   normalizePayload(payload) {
@@ -33,38 +28,8 @@ export class ResourceService {
     };
   }
 
-  async getUserResources(userId) {
-    this.validateUserId(userId);
-    return await this.resourceRepository.findByUserId(userId);
-  }
-
-  async getResourceById(id, userId) {
-    this.validateUserId(userId);
-    if (!ObjectId.isValid(id)) {
-      throw new Error("ID do recurso invalido");
-    }
-
-    const resource = await this.resourceRepository.findByIdAndUserId(id, userId);
-    if (!resource) {
-      throw new Error("Recurso nao encontrado");
-    }
-
-    return resource;
-  }
-
-  async createResource(userId, payload) {
-    this.validateUserId(userId);
-    const resource = this.normalizePayload(payload);
-
-    return await this.resourceRepository.create({
-      userId,
-      ...resource,
-    });
-  }
-
-  async updateResource(id, userId, payload) {
-    const currentResource = await this.getResourceById(id, userId);
-    const resource = this.normalizePayload({
+  prepareUpdate(currentResource, payload) {
+    return {
       ...currentResource,
       ...payload,
       attributes: {
@@ -79,20 +44,31 @@ export class ResourceService {
         ...(currentResource.schedule || {}),
         ...(payload.schedule || {}),
       },
-    });
+    };
+  }
 
-    await this.resourceRepository.update(id, resource);
-    return { message: "Recurso atualizado com sucesso" };
+  async getUserResources(userId) {
+    return await this.getAll(userId);
+  }
+
+  async getResourceById(id, userId) {
+    return await this.getById(id, userId);
+  }
+
+  async createResource(userId, payload) {
+    return await this.create(userId, payload);
+  }
+
+  async updateResource(id, userId, payload) {
+    return await this.update(id, userId, payload);
   }
 
   async deleteResource(id, userId) {
-    await this.getResourceById(id, userId);
-    await this.resourceRepository.delete(id);
-    return { message: "Recurso removido com sucesso" };
+    return await this.delete(id, userId);
   }
 
   async setManualSchedule(id, userId, dates) {
-    await this.getResourceById(id, userId);
+    await this.getOwnedById(id, userId);
 
     if (!Array.isArray(dates) || dates.length === 0) {
       throw new Error("Informe ao menos uma data");
@@ -105,7 +81,7 @@ export class ResourceService {
     }
 
     const sortedDates = dates.slice().sort();
-    await this.resourceRepository.update(id, {
+    await this.repository.update(id, {
       schedule: {
         manualDates: sortedDates,
         nextDate: sortedDates[0],
@@ -121,7 +97,7 @@ export class ResourceService {
 
   async getRecommendations(userId) {
     this.validateUserId(userId);
-    const resources = await this.resourceRepository.findByUserId(userId);
+    const resources = await this.repository.findByUserId(userId);
 
     if (resources.length === 0) {
       return [];

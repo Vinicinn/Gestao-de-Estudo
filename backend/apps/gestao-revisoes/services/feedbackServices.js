@@ -1,16 +1,11 @@
-import { ObjectId } from "mongodb";
+import { BaseService } from "../../../core/baseService.js";
 
-export class FeedbackService {
+export class FeedbackService extends BaseService {
   constructor(feedbackRepository, resourceRepository, scheduleRepository) {
+    super(feedbackRepository, "Feedback");
     this.feedbackRepository = feedbackRepository;
     this.resourceRepository = resourceRepository;
     this.scheduleRepository = scheduleRepository;
-  }
-
-  validateUserId(userId) {
-    if (!ObjectId.isValid(userId)) {
-      throw new Error("ID de usuario invalido");
-    }
   }
 
   async validateTarget(userId, resourceId, scheduleId) {
@@ -19,9 +14,7 @@ export class FeedbackService {
     }
 
     if (resourceId) {
-      if (!ObjectId.isValid(resourceId)) {
-        throw new Error("ID do recurso invalido");
-      }
+      this.validateObjectId(resourceId, "ID do recurso");
       const resource = await this.resourceRepository.findByIdAndUserId(resourceId, userId);
       if (!resource) {
         throw new Error("Recurso nao encontrado");
@@ -29,9 +22,7 @@ export class FeedbackService {
     }
 
     if (scheduleId) {
-      if (!ObjectId.isValid(scheduleId)) {
-        throw new Error("ID do agendamento invalido");
-      }
+      this.validateObjectId(scheduleId, "ID do agendamento");
       const schedule = await this.scheduleRepository.findByIdAndUserId(scheduleId, userId);
       if (!schedule) {
         throw new Error("Agendamento nao encontrado");
@@ -55,30 +46,19 @@ export class FeedbackService {
     };
   }
 
-  async createFeedback(userId, payload) {
-    this.validateUserId(userId);
-    const feedback = this.normalizePayload(payload);
+  async beforeCreate(userId, feedback) {
     await this.validateTarget(userId, feedback.resourceId, feedback.scheduleId);
+  }
 
-    return await this.feedbackRepository.create({
-      userId,
-      ...feedback,
-    });
+  async createFeedback(userId, payload) {
+    return await this.create(userId, payload);
   }
 
   async getUserFeedbacks(userId) {
-    this.validateUserId(userId);
-    return await this.feedbackRepository.findByUserId(userId);
+    return await this.getAll(userId);
   }
 
   async deleteFeedback(id, userId) {
-    this.validateUserId(userId);
-    const feedback = await this.feedbackRepository.findByIdAndUserId(id, userId);
-    if (!feedback) {
-      throw new Error("Feedback nao encontrado");
-    }
-
-    await this.feedbackRepository.delete(id);
-    return { message: "Feedback removido com sucesso" };
+    return await this.delete(id, userId);
   }
 }
