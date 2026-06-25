@@ -4,7 +4,7 @@ import { useState } from "react";
 import "../styles/UserRegister.css";
 
 export function UserRegister() {
-  const [form, setForm] = useState({ name: "", password: "", passwordConfirm: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", passwordConfirm: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +20,7 @@ export function UserRegister() {
     event.preventDefault();
     setError("");
 
-    if (!form.name || !form.password || !form.passwordConfirm) {
+    if (!form.name || !form.email || !form.password || !form.passwordConfirm) {
       setError("Preencha todos os campos");
       return;
     }
@@ -33,7 +33,11 @@ export function UserRegister() {
     setLoading(true);
 
     try {
-      const response = await api.register(form.name, form.password);
+      const response = await api.register({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
 
       if (response) {
         navigate("/login");
@@ -53,6 +57,8 @@ export function UserRegister() {
         <form className="register-form" onSubmit={handleSubmit}>
           <label className="register-label">Seu nome</label>
           <input className="register-input" type="text" name="name" placeholder="João" onChange={handleChange} />
+          <label className="register-label">Email</label>
+          <input className="register-input" type="email" name="email" placeholder="voce@exemplo.com" onChange={handleChange} />
           <label className="register-label">Senha</label>
           <input
             className="register-input"

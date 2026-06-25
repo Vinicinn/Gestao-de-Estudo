@@ -4,7 +4,7 @@ import { api } from "../services/api.js";
 import { Link } from "react-router-dom";
 
 export function LoginPage({ onLogin }) {
-  const [form, setForm] = useState({ name: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,7 @@ export function LoginPage({ onLogin }) {
     event.preventDefault();
     setError("");
 
-    if (!form.name || !form.password) {
+    if (!form.email || !form.password) {
       setError("Preencha todos os campos");
       return;
     }
@@ -26,7 +26,7 @@ export function LoginPage({ onLogin }) {
     try {
       const response = await api.login(form);
       if (response) {
-        onLogin({ id: response.id, name: response.name });
+          onLogin(response);
       }
     } catch (error) {
       setError(error.message);
@@ -43,8 +43,8 @@ export function LoginPage({ onLogin }) {
           <p className="login-subtitle">Faça login para acessar seus conteúdos</p>
         </div>
         <form className="login-form" onSubmit={handleSubmit}>
-          <label className="login-label">Aluno</label>
-          <input className="login-input" type="text" name="name" placeholder="João" onChange={handleChange} />
+          <label className="login-label">Email</label>
+          <input className="login-input" type="email" name="email" placeholder="voce@exemplo.com" onChange={handleChange} />
           <label className="login-label">Senha</label>
           <input
             className="login-input"

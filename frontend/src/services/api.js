@@ -1,299 +1,320 @@
 const URL = process.env.NODE_ENV === "development"
-  ? "/api"
-  : "https://gestao-de-estudo.onrender.com/api";
-// em dev   - /api (proxy via package.json para localhost:3001)
-// em prod  - https://gestao-de-estudo.onrender.com/api
+  ? "/api/gestao-estudos"
+  : "https://gestao-de-estudo.onrender.com/api/gestao-estudos";
+
+function getToken() {
+  return localStorage.getItem("gestaoEstudosToken");
+}
+
+function getAuthHeaders(extraHeaders = {}) {
+  const token = getToken();
+
+  return {
+    ...extraHeaders,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+async function request(path, options = {}) {
+  const response = await fetch(`${URL}${path}`, {
+    ...options,
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || "Erro ao processar a requisição");
+  }
+
+  return data;
+}
+
+function mapResource(resource) {
+  return {
+    _id: resource._id,
+    name: resource.name,
+    subject: resource.type,
+    type: resource.type,
+    description: resource.description || "",
+    goal: resource.attributes?.goal ?? 0,
+    attributes: resource.attributes || {},
+    recommendationCriteria: resource.recommendationCriteria || {},
+    schedule: resource.schedule || {},
+    nextReview: resource.schedule?.nextDate || new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+  };
+}
+
+function parseScheduleTitle(schedule) {
+  const title = schedule.title || "";
+  const [subject = "", topic = ""] = title.split(" - ");
+
+  return {
+    subject,
+    topic: schedule.metadata?.topic || topic,
+  };
+}
+
+function mapSchedule(schedule) {
+  const { subject, topic } = parseScheduleTitle(schedule);
+
+  return {
+    _id: schedule._id,
+    title: schedule.title,
+    subject,
+    topic,
+    date: schedule.date,
+    reviewDate: schedule.date,
+    time: schedule.time || "",
+    status: schedule.status || "pending",
+    completed: schedule.status === "completed",
+    skipped: schedule.status === "skipped",
+    resourceId: schedule.resourceId || null,
+    metadata: schedule.metadata || {},
+  };
+}
+
+function mapFeedback(feedback) {
+  return {
+    _id: feedback._id,
+    resourceId: feedback.resourceId || null,
+    scheduleId: feedback.scheduleId || null,
+    score: feedback.score ?? null,
+    note: feedback.note || "",
+    metadata: feedback.metadata || {},
+    understandingScore: feedback.score ?? null,
+    perceivedDifficulty: feedback.metadata?.perceivedDifficulty || null,
+  };
+}
+
+async function getAllFeedbacks() {
+  const data = await request("/feedback");
+  return Array.isArray(data) ? data.map(mapFeedback) : [];
+}
 
 export const api = {
-  async login({ name, password }) {
-    const response = await fetch(`${URL}/users/login`, {
+  async login(credentials) {
+    const email = credentials?.email || credentials?.name;
+    const password = credentials?.password;
+
+    const data = await request("/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, password }),
+      body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-
     return data;
   },
 
-  async register(name, password) {
-    const response = await fetch(`${URL}/users`, {
+  async register(nameOrPayload, password) {
+    const payload = typeof nameOrPayload === "object" && nameOrPayload !== null
+      ? nameOrPayload
+      : { name: nameOrPayload, email: nameOrPayload, password };
+
+    const data = await request("/auth/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-
-    return data.message;
-  },
-
-  async createContent({ userId, name, subject, difficulty, goal }) {
-    const response = await fetch(`${URL}/contents`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, name, subject, difficulty, goal }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-
-    return data;
-  },
-
-  async getUserContents(userId) {
-    const response = await fetch(`${URL}/contents/user/${userId}`);
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-    return data;
-  },
-
-  async createSchedule({ userId, subject, topic, date, time }) {
-    const response = await fetch(`${URL}/reviews/schedule`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, subject, topic, date, time }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-
-    return data.message;
-  },
-
-  async completeReview({ userId, contentId, reviewDate }) {
-    const response = await fetch(`${URL}/reviews/complete`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, contentId, reviewDate }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-
-    return data;
-  },
-
-  async getUserSchedules(userId) {
-    const response = await fetch(`${URL}/reviews/schedule/user/${userId}`);
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-    return data;
-  },
-
-  async getUserReviewHistory(userId) {
-    const response = await fetch(`${URL}/reviews/user/${userId}/history`);
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-    return data;
-  },
-
-  async getUserRecommendations(userId) {
-    const response = await fetch(`${URL}/contents/user/${userId}/recommendations`);
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-    return data;
-  },
-
-  async submitReviewFeedback({ userId, contentId, reviewDate, understandingScore, perceivedDifficulty, note }) {
-    const response = await fetch(`${URL}/feedback/review`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        userId,
-        contentId,
-        reviewDate,
-        understandingScore,
-        perceivedDifficulty,
-        note,
+        name: payload.name,
+        email: payload.email || payload.name,
+        password: payload.password,
       }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-
-    return data;
+    return data.message;
   },
 
-  async getUserReviewFeedback(userId, filters = {}) {
-    const params = new URLSearchParams();
-
-    if (filters.subject) {
-      params.append("subject", filters.subject);
-    }
-    if (filters.from) {
-      params.append("from", filters.from);
-    }
-    if (filters.to) {
-      params.append("to", filters.to);
-    }
-
-    const query = params.toString();
-    const response = await fetch(`${URL}/feedback/review/user/${userId}${query ? `?${query}` : ""}`);
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-
-    return data;
+  async me() {
+    return await request("/auth/me");
   },
 
-  async uncompleteReview(reviewId) {
-    const response = await fetch(`${URL}/reviews/complete/${reviewId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-    return data;
-  },
-
-  async completeSchedule(scheduleId) {
-    const response = await fetch(`${URL}/reviews/schedule/${scheduleId}/complete`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-    return data;
-  },
-
-  async uncompleteSchedule(scheduleId) {
-    const response = await fetch(`${URL}/reviews/schedule/${scheduleId}/uncomplete`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-    return data;
-  },
-
-  async skipSchedule(scheduleId) {
-    const response = await fetch(`${URL}/reviews/schedule/${scheduleId}/skip`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-    return data;
-  },
-
-  async submitScheduleFeedback({ userId, scheduleId, subject, topic, understandingScore, perceivedDifficulty, note }) {
-    const response = await fetch(`${URL}/feedback/schedule`, {
+  async createContent(payload) {
+    const data = typeof payload === "object" && payload !== null ? payload : {};
+    const resource = await request("/resources", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, scheduleId, subject, topic, understandingScore, perceivedDifficulty, note }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-    return data;
-  },
-
-  async deleteReviewFeedback({ userId, contentId, reviewDate }) {
-    const response = await fetch(`${URL}/feedback/review`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, contentId, reviewDate }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-    return data;
-  },
-
-  async deleteScheduleFeedback(scheduleId) {
-    const response = await fetch(`${URL}/feedback/schedule/${scheduleId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-    return data;
-  },
-
-  async submitSkippedReview({ userId, contentId, reviewDate }) {
-    const response = await fetch(`${URL}/feedback/skip`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, contentId, reviewDate }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-    return data;
-  },
-
-  async getSkippedReviews(userId) {
-    const response = await fetch(`${URL}/feedback/skip/user/${userId}`);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-    return data;
-  },
-  async updateContentReviewDates(contentId, nextReviews) {
-    const response = await fetch(`${URL}/contents/${contentId}/review-dates`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nextReviews }),
+      body: JSON.stringify({
+        name: data.name || data.subject,
+        type: data.type || data.subject || data.difficulty || "geral",
+        description: data.description || data.difficulty || "",
+        attributes: { goal: Number(data.goal || 0) },
+      }),
     });
 
-    const data = await response.json();
+    return resource;
+  },
 
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-
-    return data;
+  async getUserContents() {
+    const data = await request("/resources");
+    return Array.isArray(data) ? data.map(mapResource) : [];
   },
 
   async deleteContentById(contentId) {
-    await fetch(`${URL}/reviews/content/${contentId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
+    return await request(`/resources/${contentId}`, { method: "DELETE" });
+  },
 
-    const response = await fetch(`${URL}/contents/${contentId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
+  async createSchedule(payload) {
+    const data = typeof payload === "object" && payload !== null ? payload : {};
+    const title = data.title || [data.subject, data.topic].filter(Boolean).join(" - ") || "Agendamento";
 
-    const data = await response.json();
-    return data;
+    return await request("/schedules", {
+      method: "POST",
+      body: JSON.stringify({
+        title,
+        date: data.date,
+        time: data.time,
+        metadata: {
+          subject: data.subject || "",
+          topic: data.topic || "",
+        },
+      }),
+    });
+  },
+
+  async getUserSchedules() {
+    const data = await request("/schedules");
+    return Array.isArray(data) ? data.map(mapSchedule) : [];
   },
 
   async deleteScheduleById(scheduleId) {
-    const response = await fetch(`${URL}/reviews/schedule/${scheduleId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
+    return await request(`/schedules/${scheduleId}`, { method: "DELETE" });
+  },
 
-    const data = await response.json();
-    return data;
+  async getUserRecommendations() {
+    const data = await request("/resources/recommendations");
+    return Array.isArray(data)
+      ? data.map(mapResource)
+      : [];
+  },
+
+  async getUserFeedback() {
+    return { feedbacks: await getAllFeedbacks() };
+  },
+
+  async getUserReviewFeedback() {
+    return await this.getUserFeedback();
+  },
+
+  async getUserReviewHistory() {
+    const feedbacks = await getAllFeedbacks();
+    return {
+      reviews: feedbacks.map((feedback) => ({
+        _id: feedback._id,
+        contentId: feedback.resourceId || feedback.scheduleId,
+        reviewDate: new Date().toISOString().slice(0, 10),
+        nextReview: null,
+        ...feedback,
+      })),
+    };
+  },
+
+  async completeReview({ contentId, reviewDate }) {
+    return {
+      review: {
+        _id: contentId,
+        contentId,
+        reviewDate,
+      },
+    };
+  },
+
+  async submitReviewFeedback({ contentId, understandingScore, perceivedDifficulty, note }) {
+    return await request("/feedback", {
+      method: "POST",
+      body: JSON.stringify({
+        resourceId: contentId,
+        score: understandingScore,
+        note,
+        metadata: { perceivedDifficulty },
+      }),
+    });
+  },
+
+  async uncompleteReview() {
+    return { message: "ok" };
+  },
+
+  async deleteReviewFeedback({ contentId }) {
+    const feedbacks = await getAllFeedbacks();
+    const target = feedbacks.find((feedback) => feedback.resourceId?.toString() === contentId?.toString());
+
+    if (!target?._id) {
+      return { message: "ok" };
+    }
+
+    return await request(`/feedback/${target._id}`, { method: "DELETE" });
+  },
+
+  async submitSkippedReview({ contentId }) {
+    return await request("/feedback", {
+      method: "POST",
+      body: JSON.stringify({
+        resourceId: contentId,
+        score: null,
+        note: "skipped",
+        metadata: { skipped: true },
+      }),
+    });
+  },
+
+  async getSkippedReviews() {
+    const feedbacks = await getAllFeedbacks();
+    return {
+      skipped: feedbacks
+        .filter((feedback) => feedback.note === "skipped" || feedback.metadata?.skipped)
+        .map((feedback) => ({
+          _id: feedback._id,
+          contentId: feedback.resourceId,
+          reviewDate: new Date().toISOString().slice(0, 10),
+        })),
+    };
+  },
+
+  async completeSchedule(scheduleId) {
+    return await request(`/schedules/${scheduleId}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "completed" }),
+    });
+  },
+
+  async uncompleteSchedule(scheduleId) {
+    return await request(`/schedules/${scheduleId}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "pending" }),
+    });
+  },
+
+  async skipSchedule(scheduleId) {
+    return await request(`/schedules/${scheduleId}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "skipped" }),
+    });
+  },
+
+  async submitScheduleFeedback({ scheduleId, understandingScore, perceivedDifficulty, note }) {
+    return await request("/feedback", {
+      method: "POST",
+      body: JSON.stringify({
+        scheduleId,
+        score: understandingScore,
+        note,
+        metadata: { perceivedDifficulty },
+      }),
+    });
+  },
+
+  async deleteScheduleFeedback(scheduleId) {
+    const feedbacks = await getAllFeedbacks();
+    const target = feedbacks.find((feedback) => feedback.scheduleId?.toString() === scheduleId?.toString());
+
+    if (!target?._id) {
+      return { message: "ok" };
+    }
+
+    return await request(`/feedback/${target._id}`, { method: "DELETE" });
+  },
+
+  async updateContentReviewDates() {
+    return { message: "ok" };
   },
 };
