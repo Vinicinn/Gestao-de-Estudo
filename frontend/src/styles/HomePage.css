@@ -24,6 +24,24 @@
   align-items: center;
   color: white;
 }
+.home-header-actions {
+  display: flex;
+  align-items: center;
+  column-gap: 12px;
+}
+.home-logout-button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background-color: #a05050;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+.home-logout-button:hover {
+  background-color: #8f4545;
+}
 .home-card {
   display: flex;
   flex-direction: column;

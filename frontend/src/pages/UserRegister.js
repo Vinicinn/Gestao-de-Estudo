@@ -30,6 +30,11 @@ export function UserRegister() {
       return;
     }
 
+    if (form.password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+
     setLoading(true);
 
     try {

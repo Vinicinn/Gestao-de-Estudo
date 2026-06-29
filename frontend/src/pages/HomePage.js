@@ -6,7 +6,7 @@ import { RecommendationsCard } from "../components/RecommendationsCard";
 import { SchedulesCard } from "../components/SchedulesCard";
 import { HistoryCard } from "../components/HistoryCard";
 
-export function HomePage({ user }) {
+export function HomePage({ user, onLogout }) {
   const [contents, setContents] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [reviewHistory, setReviewHistory] = useState([]);
@@ -222,7 +222,12 @@ export function HomePage({ user }) {
     <div className="home-page">
       <div className="home-header">
         <h1>Olá, {user.name}</h1>
-        <span>{today}</span>
+        <div className="home-header-actions">
+          <span>{today}</span>
+          <button className="home-logout-button" type="button" onClick={onLogout}>
+            Sair
+          </button>
+        </div>
       </div>
       <div className="home-window">
         <ContentsCard deleteContent={api.deleteContentById} userContents={contents} reload={loadData} reviewHistory={reviewHistory} />
