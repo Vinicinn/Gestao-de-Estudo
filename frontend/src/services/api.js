@@ -82,6 +82,7 @@ function mapFeedback(feedback) {
     _id: feedback._id,
     resourceId: feedback.resourceId || null,
     scheduleId: feedback.scheduleId || null,
+    reviewDate: feedback.reviewDate || feedback.metadata?.reviewDate || null,
     score: feedback.score ?? null,
     note: feedback.note || "",
     metadata: feedback.metadata || {},
@@ -201,9 +202,9 @@ export const api = {
       reviews: feedbacks.map((feedback) => ({
         _id: feedback._id,
         contentId: feedback.resourceId || feedback.scheduleId,
-        reviewDate: new Date().toISOString().slice(0, 10),
-        nextReview: null,
         ...feedback,
+        reviewDate: feedback.reviewDate || new Date().toISOString().slice(0, 10),
+        nextReview: null,
       })),
     };
   },
@@ -218,11 +219,12 @@ export const api = {
     };
   },
 
-  async submitReviewFeedback({ contentId, understandingScore, perceivedDifficulty, note }) {
+  async submitReviewFeedback({ contentId, reviewDate, understandingScore, perceivedDifficulty, note }) {
     return await request("/feedback", {
       method: "POST",
       body: JSON.stringify({
         resourceId: contentId,
+        reviewDate,
         score: understandingScore,
         note,
         metadata: { perceivedDifficulty },
@@ -245,11 +247,12 @@ export const api = {
     return await request(`/feedback/${target._id}`, { method: "DELETE" });
   },
 
-  async submitSkippedReview({ contentId }) {
+  async submitSkippedReview({ contentId, reviewDate }) {
     return await request("/feedback", {
       method: "POST",
       body: JSON.stringify({
         resourceId: contentId,
+        reviewDate,
         score: null,
         note: "skipped",
         metadata: { skipped: true },
@@ -265,7 +268,7 @@ export const api = {
         .map((feedback) => ({
           _id: feedback._id,
           contentId: feedback.resourceId,
-          reviewDate: new Date().toISOString().slice(0, 10),
+          reviewDate: feedback.reviewDate || new Date().toISOString().slice(0, 10),
         })),
     };
   },
@@ -314,7 +317,10 @@ export const api = {
     return await request(`/feedback/${target._id}`, { method: "DELETE" });
   },
 
-  async updateContentReviewDates() {
-    return { message: "ok" };
+  async updateContentReviewDates(contentId, dates) {
+    return await request(`/resources/${contentId}/manual-schedule`, {
+      method: "PUT",
+      body: JSON.stringify({ dates }),
+    });
   },
 };

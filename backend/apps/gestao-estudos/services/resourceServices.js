@@ -2,10 +2,126 @@ import { BaseService } from "../../../core/baseService.js";
 import { getAiRecommendations, sortByRecommendationOrder } from "../../../core/recommendation/recommendationUtils.js";
 
 export class ResourceService extends BaseService {
-  constructor(resourceRepository, getResponse) {
+  constructor(resourceRepository, getResponse, feedbackRepository = null) {
     super(resourceRepository, "Recurso");
     this.resourceRepository = resourceRepository;
     this.getResponse = getResponse;
+    this.feedbackRepository = feedbackRepository;
+  }
+
+  getLocalIsoDate(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  addDays(date, days) {
+    const nextDate = new Date(`${date}T00:00:00`);
+    nextDate.setDate(nextDate.getDate() + days);
+    return this.getLocalIsoDate(nextDate);
+  }
+
+  getInitialReviewResources(resources) {
+    return resources
+      .filter((resource) => !resource.schedule?.lastReview && !resource.schedule?.manualDates?.length)
+      .sort((a, b) => a._id.toString().localeCompare(b._id.toString()));
+  }
+
+  getOccupiedReviewDates(resources, initialResources) {
+    const initialIds = new Set(initialResources.map((resource) => resource._id.toString()));
+
+    return new Set(
+      resources
+        .filter((resource) => !initialIds.has(resource._id.toString()))
+        .map((resource) => resource.schedule?.nextDate)
+        .filter(Boolean),
+    );
+  }
+
+  findNextFreeReviewDate(startDate, occupiedDates, startOffset = 0) {
+    let offset = startOffset;
+
+    while (true) {
+      const date = this.addDays(startDate, offset);
+      if (!occupiedDates.has(date)) {
+        occupiedDates.add(date);
+        return date;
+      }
+      offset += 1;
+    }
+  }
+
+  async hasFeedbackToday(userId, today) {
+    if (!this.feedbackRepository) {
+      return false;
+    }
+
+    const feedbacks = await this.feedbackRepository.findByUserId(userId);
+    return feedbacks.some((feedback) => {
+      const feedbackDate = feedback.reviewDate || feedback.metadata?.reviewDate;
+      return feedback.resourceId && feedbackDate === today;
+    });
+  }
+
+  async getInitialReviewStartOffset(userId, resources, today) {
+    const reviewedToday = resources.some((resource) => resource.schedule?.lastReview === today);
+    const feedbackToday = await this.hasFeedbackToday(userId, today);
+    return reviewedToday || feedbackToday ? 1 : 0;
+  }
+
+  async getNextInitialReviewDate(userId) {
+    const resources = await this.repository.findByUserId(userId);
+    const initialResources = this.getInitialReviewResources(resources);
+    const occupiedDates = this.getOccupiedReviewDates(resources, initialResources);
+    const today = this.getLocalIsoDate();
+    const startOffset = await this.getInitialReviewStartOffset(userId, resources, today);
+
+    if (startOffset > 0) {
+      occupiedDates.add(today);
+    }
+
+    for (const resource of initialResources) {
+      this.findNextFreeReviewDate(today, occupiedDates, startOffset);
+    }
+
+    return this.findNextFreeReviewDate(today, occupiedDates, startOffset);
+  }
+
+  async rebalanceInitialReviewDates(userId, resources = null) {
+    const userResources = resources || await this.repository.findByUserId(userId);
+    const initialResources = this.getInitialReviewResources(userResources);
+    const occupiedDates = this.getOccupiedReviewDates(userResources, initialResources);
+    const today = this.getLocalIsoDate();
+    const startOffset = await this.getInitialReviewStartOffset(userId, userResources, today);
+
+    if (startOffset > 0) {
+      occupiedDates.add(today);
+    }
+
+    for (const resource of initialResources) {
+      const nextDate = this.findNextFreeReviewDate(today, occupiedDates, startOffset);
+
+      if (resource.schedule?.nextDate === nextDate && resource.schedule?.initialReviewDate === nextDate) {
+        continue;
+      }
+
+      await this.repository.update(resource._id.toString(), {
+        schedule: {
+          ...(resource.schedule || {}),
+          nextDate,
+          initialReviewDate: nextDate,
+        },
+      });
+
+      resource.schedule = {
+        ...(resource.schedule || {}),
+        nextDate,
+        initialReviewDate: nextDate,
+      };
+    }
+
+    return userResources;
   }
 
   normalizePayload(payload) {
@@ -48,8 +164,22 @@ export class ResourceService extends BaseService {
     };
   }
 
+  async beforeCreate(userId, resource) {
+    if (resource.schedule?.nextDate) {
+      return;
+    }
+
+    const nextDate = await this.getNextInitialReviewDate(userId);
+    resource.schedule = {
+      ...(resource.schedule || {}),
+      nextDate,
+      initialReviewDate: nextDate,
+    };
+  }
+
   async getUserResources(userId) {
-    return await this.getAll(userId);
+    const resources = await this.getAll(userId);
+    return await this.rebalanceInitialReviewDates(userId, resources);
   }
 
   async getResourceById(id, userId) {
@@ -98,7 +228,7 @@ export class ResourceService extends BaseService {
 
   async getRecommendations(userId) {
     this.validateUserId(userId);
-    const resources = await this.repository.findByUserId(userId);
+    const resources = await this.rebalanceInitialReviewDates(userId);
 
     if (resources.length === 0) {
       return [];

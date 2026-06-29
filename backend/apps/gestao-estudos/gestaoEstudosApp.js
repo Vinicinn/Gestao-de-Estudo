@@ -32,14 +32,14 @@ export async function gestaoEstudosApp() {
   const authController = new AuthController(authService);
 
   const resourceRepository = new ResourceRepository(database);
-  const resourceService = new ResourceService(resourceRepository, getResponse);
+  const feedbackRepository = new FeedbackRepository(database);
+  const resourceService = new ResourceService(resourceRepository, getResponse, feedbackRepository);
   const resourceController = new ResourceController(resourceService);
 
   const scheduleRepository = new ScheduleRepository(database);
   const scheduleService = new ScheduleService(scheduleRepository, resourceRepository);
   const scheduleController = new ScheduleController(scheduleService);
 
-  const feedbackRepository = new FeedbackRepository(database);
   const feedbackService = new FeedbackService(
     feedbackRepository,
     resourceRepository,

@@ -176,6 +176,18 @@
   align-items: center;
   justify-content: space-evenly;
 }
+.home-item-actions {
+  display: flex;
+  align-items: center;
+  column-gap: 6px;
+}
+
+.home-review-button {
+  min-width: 34px;
+  padding: 0 8px;
+  font-size: 16px;
+  line-height: 1;
+}
 .home-item-button {
   width: fit-content;
   padding: 0px 8px 0px 8px;

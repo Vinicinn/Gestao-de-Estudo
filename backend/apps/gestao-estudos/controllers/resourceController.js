@@ -7,7 +7,12 @@ export class ResourceController extends BaseController {
   }
 
   async getUserResources(req, res) {
-    return await this.getAll(req, res);
+    return await this.handle(
+      res,
+      async () => this.ok(res, await this.resourceService.getUserResources(req.user.id)),
+      "Erro ao buscar recursos",
+      500,
+    );
   }
 
   async getResourceById(req, res) {

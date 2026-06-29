@@ -75,7 +75,7 @@ export function HomePage({ user, onLogout }) {
 
   const completedTodayIds = new Set(
     reviewHistory
-      .filter((r) => r.reviewDate === todayIso)
+      .filter((r) => r.reviewDate === todayIso && !r.metadata?.skipped && r.note !== "skipped")
       .map((r) => r.contentId?.toString())
       .filter(Boolean),
   );
@@ -97,16 +97,14 @@ export function HomePage({ user, onLogout }) {
       return true;
     }
 
-    // Se já recebeu feedback hoje, volta a exibir quando a nova data já for futura.
     return hasNextReview && content.nextReview > todayIso;
   });
 
-  // Enriquece o histórico de revisões recomendadas com nome, matéria e datas do conteúdo
   const enrichedHistory = reviewHistory.map((r) => {
     const content = contents.find((c) => c._id?.toString() === r.contentId?.toString());
     return {
       ...r,
-      title: content?.name || "Revisão concluída",
+      title: content?.name || "Revisão registrada",
       subject: content?.subject || "",
       nextReview: content?.nextReview || null,
       lastReview: content?.lastReview || null,
@@ -134,7 +132,6 @@ export function HomePage({ user, onLogout }) {
           note: feedbackData.note,
         });
       } catch (error) {
-        // Evita item "sumido" sem nova data quando o feedback falha.
         if (completion?.review?._id) {
           try {
             await api.uncompleteReview(completion.review._id);
@@ -235,6 +232,7 @@ export function HomePage({ user, onLogout }) {
           userRecommendations={visibleRecommendations}
           formatDate={formatDate}
           reload={loadData}
+          onReviewFeedback={handleReviewFeedback}
         />
         <div className="home-stack-column">
           <SchedulesCard
@@ -247,13 +245,9 @@ export function HomePage({ user, onLogout }) {
             userId={userId}
             userHistory={enrichedHistory}
             userSchedules={schedules}
-            userRecommendations={recommendations}
-            completedTodayIds={completedTodayIds}
-            skippedTodayIds={skippedTodayIds}
             formatDate={formatDate}
             onHistoryFeedback={handleHistoryFeedback}
             onScheduleFeedback={handleScheduleFeedback}
-            onReviewFeedback={handleReviewFeedback}
           />
         </div>
       </div>

@@ -1,133 +1,65 @@
 import { useEffect, useMemo, useState } from "react";
-import { ReviewFeedbackModal } from "./ReviewFeedbackModal";
 import { PieChart } from "./PieChart";
 import { api } from "../services/api";
 
-export function HistoryCard({
-  userId,
-  userHistory,
-  userSchedules,
-  userRecommendations,
-  completedTodayIds,
-  skippedTodayIds,
-  formatDate,
-  onHistoryFeedback,
-  onScheduleFeedback,
-  onReviewFeedback,
-}) {
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export function HistoryCard({ userId, userHistory, userSchedules, formatDate }) {
   const [showStats, setShowStats] = useState(false);
   const [feedbacks, setFeedbacks] = useState([]);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
 
-  const now = new Date();
-  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
-    now.getDate(),
-  ).padStart(2, "0")}`;
-
-  // Recomendações vencidas ou de hoje (excluindo as que já aparecem como completed_review no mesmo dia)
-  const completedContentIds = new Set(
-    (userHistory || []).map((r) => `${r.contentId?.toString()}_${r.reviewDate}`)
-  );
-
-  const filteredRecs = (userRecommendations || []).filter((rec) => {
-    // exclui apenas as que já foram concluídas hoje (aparecem como _type:"review")
-    const key = `${rec._id?.toString()}_${todayIso}`;
-    return !completedContentIds.has(key);
-  });
-
-  // Mescla todos os itens, marcando o tipo
   const allItems = [
-    ...(userHistory || []).map((r) => ({ ...r, _type: "review" })),
-    ...(userSchedules || []).map((s) => ({ ...s, _type: "schedule" })),
-    ...filteredRecs.map((rec) => ({ ...rec, _type: "recommendation" })),
+    ...(userHistory || []).map((review) => ({ ...review, _type: "review" })),
+    ...(userSchedules || [])
+      .filter((schedule) => schedule.completed || schedule.skipped)
+      .map((schedule) => ({ ...schedule, _type: "schedule" })),
   ].sort((a, b) => {
-    const dateA = a.reviewDate || a.nextReview || "";
-    const dateB = b.reviewDate || b.nextReview || "";
+    const dateA = a.reviewDate || a.date || "";
+    const dateB = b.reviewDate || b.date || "";
     return dateB.localeCompare(dateA);
   });
 
   function getItemDate(item) {
-    if (item._type === "recommendation") return item.nextReview || null;
-    return item.reviewDate || null;
+    return item.reviewDate || item.date || null;
+  }
+
+  function isItemSkipped(item) {
+    if (item._type === "schedule") {
+      return item.skipped === true;
+    }
+
+    return item.metadata?.skipped || item.note === "skipped";
   }
 
   function getItemTitle(item) {
-    if (item._type === "schedule") return `${item.subject} - ${item.topic}`;
-    if (item._type === "recommendation") return item.name || item.subject || "Revisão";
-    return item.title || item.subject || "Revisão concluída";
+    if (item._type === "schedule") {
+      return `${item.subject} - ${item.topic}`;
+    }
+
+    return item.title || item.subject || "Revisão registrada";
   }
 
   function getItemSubLabel(item) {
     if (item._type === "schedule") {
-      if (item.skipped) return "Agendamento · não realizado";
-      return item.completed ? "Agendamento · concluído" : "Agendamento";
+      return isItemSkipped(item) ? "Agendamento · não realizado" : "Agendamento · realizado";
     }
-    if (item._type === "recommendation") {
-      const done = completedTodayIds?.has(item._id?.toString());
-      return done ? "Revisão recomendada · concluída" : "Revisão recomendada";
-    }
-    return "Revisão recomendada · concluída";
+
+    return isItemSkipped(item) ? "Revisão · não realizada" : "Revisão · realizada";
   }
 
-  function isDateReached(item) {
-    const date = getItemDate(item);
-    if (!date) return false;
-    return date === todayIso;
-  }
+  function getDifficultyLabel(item) {
+    const difficulty = item.perceivedDifficulty || item.metadata?.perceivedDifficulty;
+    const labels = {
+      facil: "fácil",
+      medio: "média",
+      dificil: "difícil",
+      easy: "fácil",
+      medium: "média",
+      hard: "difícil",
+    };
 
-  function getInitialCompleted(item) {
-    if (item._type === "schedule") return item.completed ?? false;
-    if (item._type === "recommendation") {
-      return completedTodayIds?.has(item._id?.toString()) ?? false;
-    }
-    return true; // revisões concluídas sempre estão feitas
-  }
-
-  function isItemCompleted(item) {
-    if (item._type === "schedule") return item.completed;
-    if (item._type === "recommendation") return completedTodayIds?.has(item._id?.toString());
-    return true;
-  }
-
-  function isItemSkipped(item) {
-    if (item._type === "recommendation") return skippedTodayIds?.has(item._id?.toString());
-    if (item._type === "schedule") return item.skipped === true;
-    return false;
-  }
-
-  function handleOpenModal(item) {
-    setSelectedItem(item);
-    setIsModalOpen(true);
-  }
-
-  function handleCloseModal() {
-    setSelectedItem(null);
-    setIsModalOpen(false);
-  }
-
-  async function handleSubmitFeedback(feedbackData) {
-    if (!selectedItem) return;
-    if (selectedItem._type === "schedule") {
-      await onScheduleFeedback(selectedItem, feedbackData);
-    } else if (selectedItem._type === "recommendation") {
-      await onReviewFeedback(selectedItem, feedbackData);
-    } else {
-      await onHistoryFeedback(selectedItem, feedbackData);
-    }
-  }
-
-  function getModalContent(item) {
-    if (item._type === "schedule") return item;
-    if (item._type === "recommendation") return { name: item.name, subject: item.subject || "" };
-    return { name: item.title || "Revisão concluída", subject: item.subject || "" };
-  }
-
-  function getModalMode(item) {
-    return item._type === "schedule" ? "schedule" : "content";
+    return difficulty ? labels[difficulty] || difficulty : null;
   }
 
   function closeStatsModal() {
@@ -159,7 +91,7 @@ export function HistoryCard({
         return;
       }
 
-      if (item.skipped) {
+      if (item.metadata?.skipped || item.note === "skipped") {
         skippedCount += 1;
       } else {
         completedCount += 1;
@@ -234,8 +166,11 @@ export function HistoryCard({
       }
     }
 
-    // Recarrega imediatamente quando modal abre
     loadStatsFeedback();
+
+    return () => {
+      active = false;
+    };
   }, [showStats, userId]);
 
   return (
@@ -259,12 +194,11 @@ export function HistoryCard({
           ) : (
             allItems.map((item) => {
               const date = getItemDate(item);
-              const dateReached = isDateReached(item);
-              const isCompleted = isItemCompleted(item);
-              const isSkipped = isItemSkipped(item);
+              const skipped = isItemSkipped(item);
+
               return (
                 <div
-                  className={`home-item${isCompleted ? " home-item-completed" : ""}${isSkipped && dateReached ? " home-item-skipped" : ""}`}
+                  className={`home-item home-item-completed${skipped ? " home-item-skipped" : ""}`}
                   key={`${item._type}-${item._id}`}
                 >
                   <div className="home-item-text">
@@ -272,23 +206,14 @@ export function HistoryCard({
                     <p className="home-item-sub">
                       {getItemSubLabel(item)}
                       {date ? ` · ${formatDate(date)}` : ""}
-                      {item._type === "review" && item.nextReview ? ` · Próxima: ${formatDate(item.nextReview)}` : ""}
+                      {item._type === "review" && getDifficultyLabel(item) ? ` · Dificuldade: ${getDifficultyLabel(item)}` : ""}
                       {item._type === "schedule" && item.time ? ` às ${item.time}` : ""}
                     </p>
                   </div>
-                  {isCompleted ? (
-                    <span className="home-item-done-symbol">✓</span>
-                  ) : isSkipped && dateReached ? (
-                    <span className="home-item-skipped-symbol">✗</span>
+                  {skipped ? (
+                    <span className="home-item-skipped-symbol">✕</span>
                   ) : (
-                    dateReached && (
-                      <button
-                        className="home-item-button"
-                        onClick={() => handleOpenModal(item)}
-                      >
-                        Feedback
-                      </button>
-                    )
+                    <span className="home-item-done-symbol">✓</span>
                   )}
                 </div>
               );
@@ -296,17 +221,6 @@ export function HistoryCard({
           )}
         </div>
       </div>
-
-      {selectedItem && (
-        <ReviewFeedbackModal
-          isOpen={isModalOpen}
-          content={getModalContent(selectedItem)}
-          mode={getModalMode(selectedItem)}
-          initialCompleted={getInitialCompleted(selectedItem)}
-          onClose={handleCloseModal}
-          onSubmit={handleSubmitFeedback}
-        />
-      )}
 
       {showStats && (
         <div className="feedback-modal-overlay" onClick={closeStatsModal}>
