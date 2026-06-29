@@ -1,4 +1,5 @@
 import { BaseService } from "../../../core/baseService.js";
+import { getAiRecommendations, registerRecommendationEvent } from "../../../core/recommendation/recommendationUtils.js";
 
 export class ResourceService extends BaseService {
   constructor(resourceRepository, scheduleRepository, feedbackRepository, getResponse) {
@@ -363,24 +364,21 @@ export class ResourceService extends BaseService {
     ${JSON.stringify(books, null, 2)}
     `;
 
-    try {
-      const response = await this.getResponse(prompt);
-      const match = response.match(/\[[\s\S]*\]/);
-      const parsed = JSON.parse(match[0]);
+    const result = await getAiRecommendations({
+      getResponse: this.getResponse,
+      prompt,
+      fallback: () => this.buildFallbackRecommendations(books, preferences || {}),
+      mapItem: (recommendation) => this.upsertAiRecommendation(userId, recommendation),
+    });
 
-      for (const recommendation of parsed) {
-        const upserted = await this.upsertAiRecommendation(userId, recommendation);
-        if (upserted) {
-          recommendations.push(upserted);
-        }
-      }
-    } catch (_) {
-      recommendations = this.buildFallbackRecommendations(books, preferences || {});
-    }
+    recommendations = result.recommendations;
 
-    await this.registerHistory(userId, "ai_recommendation_generated", {
-      recommendationIds: recommendations.map((book) => book._id?.toString()).filter(Boolean),
-      totalRecommendations: recommendations.length,
+    await registerRecommendationEvent({
+      registerHistory: this.registerHistory.bind(this),
+      userId,
+      type: "ai_recommendation_generated",
+      recommendations,
+      payload: { source: result.source },
     });
 
     return recommendations;

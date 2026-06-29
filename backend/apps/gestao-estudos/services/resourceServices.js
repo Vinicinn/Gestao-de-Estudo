@@ -1,4 +1,5 @@
 import { BaseService } from "../../../core/baseService.js";
+import { getAiRecommendations, sortByRecommendationOrder } from "../../../core/recommendation/recommendationUtils.js";
 
 export class ResourceService extends BaseService {
   constructor(resourceRepository, getResponse) {
@@ -119,17 +120,16 @@ export class ResourceService extends BaseService {
     ${JSON.stringify(resources, null, 2)}
     `;
 
-    try {
-      const response = await this.getResponse(prompt);
-      const match = response.match(/\[[\s\S]*\]/);
-      const ordered = JSON.parse(match[0]);
-      const order = new Map(ordered.map((item, index) => [item._id?.toString(), index]));
+    const { recommendations: ordered } = await getAiRecommendations({
+      getResponse: this.getResponse,
+      prompt,
+      fallback: () => [],
+    });
 
-      return resources
-        .slice()
-        .sort((a, b) => (order.get(a._id.toString()) ?? 9999) - (order.get(b._id.toString()) ?? 9999));
-    } catch (_) {
+    if (ordered.length === 0) {
       return resources;
     }
+
+    return sortByRecommendationOrder(resources, ordered);
   }
 }
