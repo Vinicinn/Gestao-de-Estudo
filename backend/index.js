@@ -6,6 +6,7 @@ dotenv.config();
 
 import { gestaoEstudosApp } from "./apps/gestao-estudos/gestaoEstudosApp.js";
 import { recomendacaoLivrosApp } from "./apps/recomendacao-livros/recomendacaoLivrosApp.js";
+import { recomendacaoTreinosApp } from "./apps/recomendacao-treinos/recomendacaoTreinosApp.js";
 
 const app = express();
 app.use(cors());
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/api/gestao-estudos", await gestaoEstudosApp());
 app.use("/api/recomendacao-livros", await recomendacaoLivrosApp());
+app.use("/api/recomendacao-treinos", await recomendacaoTreinosApp());
 
 app.use((req, res) => {
   res.status(404).json({ mensagem: "Rota nao encontrada." });
